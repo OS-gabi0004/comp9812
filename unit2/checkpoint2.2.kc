@@ -35,43 +35,43 @@ void main() {
 }
 
 void syscall00() {
-  *(SCREEN+79) = '(';
+
 }
 
 void syscall01() {
-  *(SCREEN+78) = ')';
+
 }
 
 void syscall02() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall03() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall04() {
-  *(SCREEN+79) = '(';
+
 }
 
 void syscall05() {
-  *(SCREEN+78) = ')';
+
 }
 
 void syscall06() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall07() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall08() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall09() {
-  *(SCREEN+77) = 'A';
+
 }
 
 void syscall0A() {
@@ -102,11 +102,11 @@ void syscall10() {
 
 }
 
-void securentr() {
+void SECURENTR() {
 
 }
 
-void securexit() {
+void SECUREXIT() {
 
 }
 
@@ -396,8 +396,8 @@ export struct SysCall[] SYSCALLS = {
   {JMP, &syscall3D, NOP },
   {JMP, &syscall3E, NOP },
   {JMP, &syscall3F, NOP },
-  {JMP, &securentr, NOP },
-  {JMP, &securexit, NOP }
+  {JMP, &SECURENTR, NOP },
+  {JMP, &SECUREXIT, NOP }
 };
 
 export align(0x100) struct SysCall[] TRAPS = {

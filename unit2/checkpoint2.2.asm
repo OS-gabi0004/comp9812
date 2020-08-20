@@ -272,10 +272,10 @@ syscall14: {
 syscall13: {
     rts
 }
-securexit: {
+SECUREXIT: {
     rts
 }
-securentr: {
+SECURENTR: {
     rts
 }
 syscall10: {
@@ -300,53 +300,33 @@ syscall0A: {
     rts
 }
 syscall09: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall08: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall07: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall06: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall05: {
-    lda #')'
-    sta SCREEN+$4e
     rts
 }
 syscall04: {
-    lda #'('
-    sta SCREEN+$4f
     rts
 }
 syscall03: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall02: {
-    lda #'A'
-    sta SCREEN+$4d
     rts
 }
 syscall01: {
-    lda #')'
-    sta SCREEN+$4e
     rts
 }
 syscall00: {
-    lda #'('
-    sta SCREEN+$4f
     rts
 }
 .segment Data
@@ -478,9 +458,9 @@ syscall00: {
   .byte NOP, JMP
   .word syscall3F
   .byte NOP, JMP
-  .word securentr
+  .word SECURENTR
   .byte NOP, JMP
-  .word securexit
+  .word SECUREXIT
   .byte NOP
   .align $100
   TRAPS: .byte JMP

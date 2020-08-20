@@ -120,39 +120,37 @@ memset: {
     jmp __b2
 }
 cpukil: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
-exit_hypervisor: {
-    lda #1
-    sta $d67f
+undefined_trap: {
     rts
 }
 reservd: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
 vf011wr: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
 vf011rd: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
 alttabkey: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
 restorkey: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
 pagfault: {
-    jsr exit_hypervisor
+    jsr undefined_trap
     rts
 }
-reset: {
+RESET: {
     .label sc = $c
     .label msg = $a
     lda #$14
@@ -218,103 +216,32 @@ reset: {
   !:
     jmp __b1
 }
-syscall64: {
+syscall3F: {
     jsr exit_hypervisor
     rts
 }
-syscall63: {
+exit_hypervisor: {
+    lda #1
+    sta $d67f
+    rts
+}
+syscall3E: {
     jsr exit_hypervisor
     rts
 }
-syscall62: {
+syscall3D: {
     jsr exit_hypervisor
     rts
 }
-syscall61: {
+syscall3C: {
     jsr exit_hypervisor
     rts
 }
-syscall60: {
+syscall3B: {
     jsr exit_hypervisor
     rts
 }
-syscall59: {
-    jsr exit_hypervisor
-    rts
-}
-syscall58: {
-    jsr exit_hypervisor
-    rts
-}
-syscall57: {
-    jsr exit_hypervisor
-    rts
-}
-syscall56: {
-    jsr exit_hypervisor
-    rts
-}
-syscall55: {
-    jsr exit_hypervisor
-    rts
-}
-syscall54: {
-    jsr exit_hypervisor
-    rts
-}
-syscall53: {
-    jsr exit_hypervisor
-    rts
-}
-syscall52: {
-    jsr exit_hypervisor
-    rts
-}
-syscall51: {
-    jsr exit_hypervisor
-    rts
-}
-syscall50: {
-    jsr exit_hypervisor
-    rts
-}
-syscall49: {
-    jsr exit_hypervisor
-    rts
-}
-syscall48: {
-    jsr exit_hypervisor
-    rts
-}
-syscall47: {
-    jsr exit_hypervisor
-    rts
-}
-syscall46: {
-    jsr exit_hypervisor
-    rts
-}
-syscall45: {
-    jsr exit_hypervisor
-    rts
-}
-syscall44: {
-    jsr exit_hypervisor
-    rts
-}
-syscall43: {
-    jsr exit_hypervisor
-    rts
-}
-syscall42: {
-    jsr exit_hypervisor
-    rts
-}
-syscall41: {
-    jsr exit_hypervisor
-    rts
-}
-syscall40: {
+syscall3A: {
     jsr exit_hypervisor
     rts
 }
@@ -358,6 +285,30 @@ syscall30: {
     jsr exit_hypervisor
     rts
 }
+syscall2F: {
+    jsr exit_hypervisor
+    rts
+}
+syscall2E: {
+    jsr exit_hypervisor
+    rts
+}
+syscall2D: {
+    jsr exit_hypervisor
+    rts
+}
+syscall2C: {
+    jsr exit_hypervisor
+    rts
+}
+syscall2B: {
+    jsr exit_hypervisor
+    rts
+}
+syscall2A: {
+    jsr exit_hypervisor
+    rts
+}
 syscall29: {
     jsr exit_hypervisor
     rts
@@ -378,10 +329,6 @@ syscall25: {
     jsr exit_hypervisor
     rts
 }
-syscall24: {
-    jsr exit_hypervisor
-    rts
-}
 syscall23: {
     jsr exit_hypervisor
     rts
@@ -395,6 +342,30 @@ syscall21: {
     rts
 }
 syscall20: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1F: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1E: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1D: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1C: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1B: {
+    jsr exit_hypervisor
+    rts
+}
+syscall1A: {
     jsr exit_hypervisor
     rts
 }
@@ -426,71 +397,79 @@ syscall13: {
     jsr exit_hypervisor
     rts
 }
-syscall12: {
+SECUREXIT: {
     jsr exit_hypervisor
     rts
 }
-syscall11: {
+SECURENTR: {
     jsr exit_hypervisor
     rts
 }
 syscall10: {
-    lda #'A'
-    sta SCREEN+$4d
     jsr exit_hypervisor
     rts
 }
-syscall9: {
-    lda #'A'
-    sta SCREEN+$4d
+syscall0F: {
     jsr exit_hypervisor
     rts
 }
-syscall8: {
-    lda #'A'
-    sta SCREEN+$4d
+syscall0E: {
     jsr exit_hypervisor
     rts
 }
-syscall7: {
-    lda #'A'
-    sta SCREEN+$4d
+syscall0D: {
     jsr exit_hypervisor
     rts
 }
-syscall6: {
-    lda #')'
-    sta SCREEN+$4e
+syscall0C: {
     jsr exit_hypervisor
     rts
 }
-syscall5: {
-    lda #'('
-    sta SCREEN+$4f
+syscall0B: {
     jsr exit_hypervisor
     rts
 }
-syscall4: {
-    lda #'A'
-    sta SCREEN+$4d
+syscall0A: {
     jsr exit_hypervisor
     rts
 }
-syscall3: {
-    lda #'A'
-    sta SCREEN+$4d
+syscall09: {
     jsr exit_hypervisor
     rts
 }
-syscall2: {
-    lda #')'
-    sta SCREEN+$4e
+syscall08: {
     jsr exit_hypervisor
     rts
 }
-syscall1: {
-    lda #'('
-    sta SCREEN+$4f
+syscall07: {
+    jsr exit_hypervisor
+    rts
+}
+syscall06: {
+    jsr exit_hypervisor
+    rts
+}
+syscall05: {
+    jsr exit_hypervisor
+    rts
+}
+syscall04: {
+    jsr exit_hypervisor
+    rts
+}
+syscall03: {
+    jsr exit_hypervisor
+    rts
+}
+syscall02: {
+    jsr exit_hypervisor
+    rts
+}
+syscall01: {
+    jsr exit_hypervisor
+    rts
+}
+syscall00: {
     jsr exit_hypervisor
     rts
 }
@@ -499,29 +478,39 @@ syscall1: {
   .byte 0
 .segment Syscall
   SYSCALLS: .byte JMP
-  .word syscall1
+  .word syscall00
   .byte NOP, JMP
-  .word syscall2
+  .word syscall01
   .byte NOP, JMP
-  .word syscall3
+  .word syscall02
   .byte NOP, JMP
-  .word syscall4
+  .word syscall03
   .byte NOP, JMP
-  .word syscall5
+  .word syscall04
   .byte NOP, JMP
-  .word syscall6
+  .word syscall05
   .byte NOP, JMP
-  .word syscall7
+  .word syscall06
   .byte NOP, JMP
-  .word syscall8
+  .word syscall07
   .byte NOP, JMP
-  .word syscall9
+  .word syscall08
+  .byte NOP, JMP
+  .word syscall09
+  .byte NOP, JMP
+  .word syscall0A
+  .byte NOP, JMP
+  .word syscall0B
+  .byte NOP, JMP
+  .word syscall0C
+  .byte NOP, JMP
+  .word syscall0D
+  .byte NOP, JMP
+  .word syscall0E
+  .byte NOP, JMP
+  .word syscall0F
   .byte NOP, JMP
   .word syscall10
-  .byte NOP, JMP
-  .word syscall11
-  .byte NOP, JMP
-  .word syscall12
   .byte NOP, JMP
   .word syscall13
   .byte NOP, JMP
@@ -537,6 +526,18 @@ syscall1: {
   .byte NOP, JMP
   .word syscall19
   .byte NOP, JMP
+  .word syscall1A
+  .byte NOP, JMP
+  .word syscall1B
+  .byte NOP, JMP
+  .word syscall1C
+  .byte NOP, JMP
+  .word syscall1D
+  .byte NOP, JMP
+  .word syscall1E
+  .byte NOP, JMP
+  .word syscall1F
+  .byte NOP, JMP
   .word syscall20
   .byte NOP, JMP
   .word syscall21
@@ -545,7 +546,7 @@ syscall1: {
   .byte NOP, JMP
   .word syscall23
   .byte NOP, JMP
-  .word syscall24
+  .word syscall23
   .byte NOP, JMP
   .word syscall25
   .byte NOP, JMP
@@ -556,6 +557,18 @@ syscall1: {
   .word syscall28
   .byte NOP, JMP
   .word syscall29
+  .byte NOP, JMP
+  .word syscall2A
+  .byte NOP, JMP
+  .word syscall2B
+  .byte NOP, JMP
+  .word syscall2C
+  .byte NOP, JMP
+  .word syscall2D
+  .byte NOP, JMP
+  .word syscall2E
+  .byte NOP, JMP
+  .word syscall2F
   .byte NOP, JMP
   .word syscall30
   .byte NOP, JMP
@@ -577,59 +590,25 @@ syscall1: {
   .byte NOP, JMP
   .word syscall39
   .byte NOP, JMP
-  .word syscall40
+  .word syscall3A
   .byte NOP, JMP
-  .word syscall41
+  .word syscall3B
   .byte NOP, JMP
-  .word syscall42
+  .word syscall3C
   .byte NOP, JMP
-  .word syscall43
+  .word syscall3D
   .byte NOP, JMP
-  .word syscall44
+  .word syscall3E
   .byte NOP, JMP
-  .word syscall45
+  .word syscall3F
   .byte NOP, JMP
-  .word syscall46
+  .word SECURENTR
   .byte NOP, JMP
-  .word syscall47
-  .byte NOP, JMP
-  .word syscall48
-  .byte NOP, JMP
-  .word syscall49
-  .byte NOP, JMP
-  .word syscall50
-  .byte NOP, JMP
-  .word syscall51
-  .byte NOP, JMP
-  .word syscall52
-  .byte NOP, JMP
-  .word syscall53
-  .byte NOP, JMP
-  .word syscall54
-  .byte NOP, JMP
-  .word syscall55
-  .byte NOP, JMP
-  .word syscall56
-  .byte NOP, JMP
-  .word syscall57
-  .byte NOP, JMP
-  .word syscall58
-  .byte NOP, JMP
-  .word syscall59
-  .byte NOP, JMP
-  .word syscall60
-  .byte NOP, JMP
-  .word syscall61
-  .byte NOP, JMP
-  .word syscall62
-  .byte NOP, JMP
-  .word syscall63
-  .byte NOP, JMP
-  .word syscall64
+  .word SECUREXIT
   .byte NOP
   .align $100
   TRAPS: .byte JMP
-  .word reset
+  .word RESET
   .byte NOP, JMP
   .word pagfault
   .byte NOP, JMP
@@ -644,6 +623,4 @@ syscall1: {
   .word reservd
   .byte NOP, JMP
   .word cpukil
-  .byte NOP, JMP
-  .word main
   .byte NOP

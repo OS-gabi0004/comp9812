@@ -10,7 +10,7 @@ const char* COLS = 0xd800;
 const char BLACK = 0;
 const char WHITE = 1;
 
-char[] MESSAGE = "checkpoint 2.3 by gabi0004";
+char[] MESSAGE = "checkpoint 2.2 by gabi0004";
 
 void main() {
 
@@ -34,52 +34,79 @@ void main() {
   }
 }
 
-void syscall1() {
-  *(SCREEN+79) = '(';
-  exit_hypervisor();
+void syscall00() {
+
 }
 
-void syscall2() {
-  *(SCREEN+78) = ')';
+void syscall01() {
+
 }
 
-void syscall3() {
-  *(SCREEN+77) = 'A';
+void syscall02() {
+
 }
 
-void syscall4() {
-  *(SCREEN+77) = 'A';
+void syscall03() {
+
 }
 
-void syscall5() {
-  *(SCREEN+79) = '(';
+void syscall04() {
+
 }
 
-void syscall6() {
-  *(SCREEN+78) = ')';
+void syscall05() {
+
 }
 
-void syscall7() {
-  *(SCREEN+77) = 'A';
+void syscall06() {
+
 }
 
-void syscall8() {
-  *(SCREEN+77) = 'A';
+void syscall07() {
+
 }
 
-void syscall9() {
-  *(SCREEN+77) = 'A';
+void syscall08() {
+
+}
+
+void syscall09() {
+
+}
+
+void syscall0A() {
+
+}
+
+void syscall0B() {
+
+}
+
+void syscall0C() {
+
+}
+
+void syscall0D() {
+
+}
+
+void syscall0E() {
+
+}
+
+void syscall0F() {
+
 }
 
 void syscall10() {
-  *(SCREEN+77) = 'A';
-}
-
-void syscall11() {
 
 }
 
-void syscall12() {
+void SECURENTR() {
+
+}
+
+void SECUREXIT() {
 
 }
 
@@ -108,6 +135,30 @@ void syscall18() {
 }
 
 void syscall19() {
+
+}
+
+void syscall1A() {
+
+}
+
+void syscall1B() {
+
+}
+
+void syscall1C() {
+
+}
+
+void syscall1D() {
+
+}
+
+void syscall1E() {
+
+}
+
+void syscall1F() {
 
 }
 
@@ -151,6 +202,30 @@ void syscall29() {
 
 }
 
+void syscall2A() {
+
+}
+
+void syscall2B() {
+
+}
+
+void syscall2C() {
+
+}
+
+void syscall2D() {
+
+}
+
+void syscall2E() {
+
+}
+
+void syscall2F() {
+
+}
+
 void syscall30() {
 
 }
@@ -191,103 +266,27 @@ void syscall39() {
 
 }
 
-void syscall40() {
+void syscall3A() {
 
 }
 
-void syscall41() {
+void syscall3B() {
 
 }
 
-void syscall42() {
+void syscall3C() {
 
 }
 
-void syscall43() {
+void syscall3D() {
 
 }
 
-void syscall44() {
+void syscall3E() {
 
 }
 
-void syscall45() {
-
-}
-
-void syscall46() {
-
-}
-
-void syscall47() {
-
-}
-
-void syscall48() {
-
-}
-
-void syscall49() {
-
-}
-
-void syscall50() {
-
-}
-
-void syscall51() {
-
-}
-
-void syscall52() {
-
-}
-
-void syscall53() {
-
-}
-
-void syscall54() {
-
-}
-
-void syscall55() {
-
-}
-
-void syscall56() {
-
-}
-
-void syscall57() {
-
-}
-
-void syscall58() {
-
-}
-
-void syscall59() {
-
-}
-
-void syscall60() {
-
-}
-
-void syscall61() {
-
-}
-
-void syscall62() {
-
-}
-
-void syscall63() {
-
-}
-
-void syscall64() {
+void syscall3F() {
 
 }
 
@@ -323,10 +322,6 @@ void cpukil() {
 
 }
 
-void exit_hypervisor() {
-  *(unsigned char *) $D67F = $01;
-}
-
 #pragma data_seg(Syscall)
 
 struct SysCall {
@@ -339,18 +334,23 @@ const char JMP = 0x4c;
 const char NOP = 0xea;
 
 export struct SysCall[] SYSCALLS = {
-  {JMP, &syscall1, NOP },
-  {JMP, &syscall2, NOP },
-  {JMP, &syscall3, NOP },
-  {JMP, &syscall4, NOP },
-  {JMP, &syscall5, NOP },
-  {JMP, &syscall6, NOP },
-  {JMP, &syscall7, NOP },
-  {JMP, &syscall8, NOP },
-  {JMP, &syscall9, NOP },
+  {JMP, &syscall00, NOP },
+  {JMP, &syscall01, NOP },
+  {JMP, &syscall02, NOP },
+  {JMP, &syscall03, NOP },
+  {JMP, &syscall04, NOP },
+  {JMP, &syscall05, NOP },
+  {JMP, &syscall06, NOP },
+  {JMP, &syscall07, NOP },
+  {JMP, &syscall08, NOP },
+  {JMP, &syscall09, NOP },
+  {JMP, &syscall0A, NOP },
+  {JMP, &syscall0B, NOP },
+  {JMP, &syscall0C, NOP },
+  {JMP, &syscall0D, NOP },
+  {JMP, &syscall0E, NOP },
+  {JMP, &syscall0F, NOP },
   {JMP, &syscall10, NOP },
-  {JMP, &syscall11, NOP },
-  {JMP, &syscall12, NOP },
   {JMP, &syscall13, NOP },
   {JMP, &syscall14, NOP },
   {JMP, &syscall15, NOP },
@@ -358,16 +358,28 @@ export struct SysCall[] SYSCALLS = {
   {JMP, &syscall17, NOP },
   {JMP, &syscall18, NOP },
   {JMP, &syscall19, NOP },
+  {JMP, &syscall1A, NOP },
+  {JMP, &syscall1B, NOP },
+  {JMP, &syscall1C, NOP },
+  {JMP, &syscall1D, NOP },
+  {JMP, &syscall1E, NOP },
+  {JMP, &syscall1F, NOP },
   {JMP, &syscall20, NOP },
   {JMP, &syscall21, NOP },
   {JMP, &syscall22, NOP },
   {JMP, &syscall23, NOP },
-  {JMP, &syscall24, NOP },
+  {JMP, &syscall23, NOP },
   {JMP, &syscall25, NOP },
   {JMP, &syscall26, NOP },
   {JMP, &syscall27, NOP },
   {JMP, &syscall28, NOP },
   {JMP, &syscall29, NOP },
+  {JMP, &syscall2A, NOP },
+  {JMP, &syscall2B, NOP },
+  {JMP, &syscall2C, NOP },
+  {JMP, &syscall2D, NOP },
+  {JMP, &syscall2E, NOP },
+  {JMP, &syscall2F, NOP },
   {JMP, &syscall30, NOP },
   {JMP, &syscall31, NOP },
   {JMP, &syscall32, NOP },
@@ -378,31 +390,14 @@ export struct SysCall[] SYSCALLS = {
   {JMP, &syscall37, NOP },
   {JMP, &syscall38, NOP },
   {JMP, &syscall39, NOP },
-  {JMP, &syscall40, NOP },
-  {JMP, &syscall41, NOP },
-  {JMP, &syscall42, NOP },
-  {JMP, &syscall43, NOP },
-  {JMP, &syscall44, NOP },
-  {JMP, &syscall45, NOP },
-  {JMP, &syscall46, NOP },
-  {JMP, &syscall47, NOP },
-  {JMP, &syscall48, NOP },
-  {JMP, &syscall49, NOP },
-  {JMP, &syscall50, NOP },
-  {JMP, &syscall51, NOP },
-  {JMP, &syscall52, NOP },
-  {JMP, &syscall53, NOP },
-  {JMP, &syscall54, NOP },
-  {JMP, &syscall55, NOP },
-  {JMP, &syscall56, NOP },
-  {JMP, &syscall57, NOP },
-  {JMP, &syscall58, NOP },
-  {JMP, &syscall59, NOP },
-  {JMP, &syscall60, NOP },
-  {JMP, &syscall61, NOP },
-  {JMP, &syscall62, NOP },
-  {JMP, &syscall63, NOP },
-  {JMP, &syscall64, NOP }
+  {JMP, &syscall3A, NOP },
+  {JMP, &syscall3B, NOP },
+  {JMP, &syscall3C, NOP },
+  {JMP, &syscall3D, NOP },
+  {JMP, &syscall3E, NOP },
+  {JMP, &syscall3F, NOP },
+  {JMP, &SECURENTR, NOP },
+  {JMP, &SECUREXIT, NOP }
 };
 
 export align(0x100) struct SysCall[] TRAPS = {

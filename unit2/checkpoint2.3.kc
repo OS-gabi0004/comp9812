@@ -34,62 +34,87 @@ void main() {
   }
 }
 
-void syscall1() {
-  *(SCREEN+79) = '(';
+void exit_hypervisor() {
+  *(unsigned char *)$D67F = $01;
+}
+
+void undefined_trap() {
+
+}
+
+void syscall00() {
   exit_hypervisor();
 }
 
-void syscall2() {
-  *(SCREEN+78) = ')';
+void syscall01() {
   exit_hypervisor();
 }
 
-void syscall3() {
-  *(SCREEN+77) = 'A';
+void syscall02() {
   exit_hypervisor();
 }
 
-void syscall4() {
-  *(SCREEN+77) = 'A';
+void syscall03() {
   exit_hypervisor();
 }
 
-void syscall5() {
-  *(SCREEN+79) = '(';
+void syscall04() {
   exit_hypervisor();
 }
 
-void syscall6() {
-  *(SCREEN+78) = ')';
+void syscall05() {
   exit_hypervisor();
 }
 
-void syscall7() {
-  *(SCREEN+77) = 'A';
+void syscall06() {
   exit_hypervisor();
 }
 
-void syscall8() {
-  *(SCREEN+77) = 'A';
+void syscall07() {
   exit_hypervisor();
 }
 
-void syscall9() {
-  *(SCREEN+77) = 'A';
+void syscall08() {
+  exit_hypervisor();
+}
+
+void syscall09() {
+  exit_hypervisor();
+}
+
+void syscall0A() {
+  exit_hypervisor();
+}
+
+void syscall0B() {
+  exit_hypervisor();
+}
+
+void syscall0C() {
+  exit_hypervisor();
+}
+
+void syscall0D() {
+  exit_hypervisor();
+}
+
+void syscall0E() {
+  exit_hypervisor();
+}
+
+void syscall0F() {
   exit_hypervisor();
 }
 
 void syscall10() {
-  *(SCREEN+77) = 'A';
   exit_hypervisor();
 }
 
-void syscall11() {
+void SECURENTR() {
   exit_hypervisor();
-
 }
 
-void syscall12() {
+void SECUREXIT() {
   exit_hypervisor();
 }
 
@@ -118,6 +143,30 @@ void syscall18() {
 }
 
 void syscall19() {
+  exit_hypervisor();
+}
+
+void syscall1A() {
+  exit_hypervisor();
+}
+
+void syscall1B() {
+  exit_hypervisor();
+}
+
+void syscall1C() {
+  exit_hypervisor();
+}
+
+void syscall1D() {
+  exit_hypervisor();
+}
+
+void syscall1E() {
+  exit_hypervisor();
+}
+
+void syscall1F() {
   exit_hypervisor();
 }
 
@@ -161,6 +210,30 @@ void syscall29() {
   exit_hypervisor();
 }
 
+void syscall2A() {
+  exit_hypervisor();
+}
+
+void syscall2B() {
+  exit_hypervisor();
+}
+
+void syscall2C() {
+  exit_hypervisor();
+}
+
+void syscall2D() {
+  exit_hypervisor();
+}
+
+void syscall2E() {
+  exit_hypervisor();
+}
+
+void syscall2F() {
+  exit_hypervisor();
+}
+
 void syscall30() {
   exit_hypervisor();
 }
@@ -201,108 +274,31 @@ void syscall39() {
   exit_hypervisor();
 }
 
-void syscall40() {
+void syscall3A() {
   exit_hypervisor();
 }
 
-void syscall41() {
+void syscall3B() {
   exit_hypervisor();
 }
 
-void syscall42() {
+void syscall3C() {
   exit_hypervisor();
 }
 
-void syscall43() {
+void syscall3D() {
   exit_hypervisor();
 }
 
-void syscall44() {
+void syscall3E() {
   exit_hypervisor();
 }
 
-void syscall45() {
+void syscall3F() {
   exit_hypervisor();
 }
 
-void syscall46() {
-  exit_hypervisor();
-}
-
-void syscall47() {
-  exit_hypervisor();
-}
-
-void syscall48() {
-  exit_hypervisor();
-}
-
-void syscall49() {
-  exit_hypervisor();
-}
-
-void syscall50() {
-  exit_hypervisor();
-}
-
-void syscall51() {
-  exit_hypervisor();
-}
-
-void syscall52() {
-  exit_hypervisor();
-}
-
-void syscall53() {
-  exit_hypervisor();
-}
-
-void syscall54() {
-  exit_hypervisor();
-}
-
-void syscall55() {
-  exit_hypervisor();
-}
-
-void syscall56() {
-  exit_hypervisor();
-}
-
-void syscall57() {
-  exit_hypervisor();
-}
-
-void syscall58() {
-  exit_hypervisor();
-}
-
-void syscall59() {
-  exit_hypervisor();
-}
-
-void syscall60() {
-  exit_hypervisor();
-}
-
-void syscall61() {
-  exit_hypervisor();
-}
-
-void syscall62() {
-  exit_hypervisor();
-}
-
-void syscall63() {
-  exit_hypervisor();
-}
-
-void syscall64() {
-  exit_hypervisor();
-}
-
-void reset() {
-  
+void RESET() {
   *VIC_MEMORY = 0x14;
   memset(SCREEN, ' ', 40*25);
   memset(COLS, WHITE, 40*25);
@@ -324,35 +320,31 @@ void reset() {
 }
 
 void pagfault() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void restorkey() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void alttabkey() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void vf011rd() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void vf011wr() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void reservd() {
-  exit_hypervisor();
+  undefined_trap();
 }
 
 void cpukil() {
-  exit_hypervisor();
-}
-
-void exit_hypervisor() {
-  *(unsigned char *) $D67F = $01;
+  undefined_trap();
 }
 
 #pragma data_seg(Syscall)
@@ -367,18 +359,23 @@ const char JMP = 0x4c;
 const char NOP = 0xea;
 
 export struct SysCall[] SYSCALLS = {
-  {JMP, &syscall1, NOP },
-  {JMP, &syscall2, NOP },
-  {JMP, &syscall3, NOP },
-  {JMP, &syscall4, NOP },
-  {JMP, &syscall5, NOP },
-  {JMP, &syscall6, NOP },
-  {JMP, &syscall7, NOP },
-  {JMP, &syscall8, NOP },
-  {JMP, &syscall9, NOP },
+  {JMP, &syscall00, NOP },
+  {JMP, &syscall01, NOP },
+  {JMP, &syscall02, NOP },
+  {JMP, &syscall03, NOP },
+  {JMP, &syscall04, NOP },
+  {JMP, &syscall05, NOP },
+  {JMP, &syscall06, NOP },
+  {JMP, &syscall07, NOP },
+  {JMP, &syscall08, NOP },
+  {JMP, &syscall09, NOP },
+  {JMP, &syscall0A, NOP },
+  {JMP, &syscall0B, NOP },
+  {JMP, &syscall0C, NOP },
+  {JMP, &syscall0D, NOP },
+  {JMP, &syscall0E, NOP },
+  {JMP, &syscall0F, NOP },
   {JMP, &syscall10, NOP },
-  {JMP, &syscall11, NOP },
-  {JMP, &syscall12, NOP },
   {JMP, &syscall13, NOP },
   {JMP, &syscall14, NOP },
   {JMP, &syscall15, NOP },
@@ -386,16 +383,28 @@ export struct SysCall[] SYSCALLS = {
   {JMP, &syscall17, NOP },
   {JMP, &syscall18, NOP },
   {JMP, &syscall19, NOP },
+  {JMP, &syscall1A, NOP },
+  {JMP, &syscall1B, NOP },
+  {JMP, &syscall1C, NOP },
+  {JMP, &syscall1D, NOP },
+  {JMP, &syscall1E, NOP },
+  {JMP, &syscall1F, NOP },
   {JMP, &syscall20, NOP },
   {JMP, &syscall21, NOP },
   {JMP, &syscall22, NOP },
   {JMP, &syscall23, NOP },
-  {JMP, &syscall24, NOP },
+  {JMP, &syscall23, NOP },
   {JMP, &syscall25, NOP },
   {JMP, &syscall26, NOP },
   {JMP, &syscall27, NOP },
   {JMP, &syscall28, NOP },
   {JMP, &syscall29, NOP },
+  {JMP, &syscall2A, NOP },
+  {JMP, &syscall2B, NOP },
+  {JMP, &syscall2C, NOP },
+  {JMP, &syscall2D, NOP },
+  {JMP, &syscall2E, NOP },
+  {JMP, &syscall2F, NOP },
   {JMP, &syscall30, NOP },
   {JMP, &syscall31, NOP },
   {JMP, &syscall32, NOP },
@@ -406,41 +415,23 @@ export struct SysCall[] SYSCALLS = {
   {JMP, &syscall37, NOP },
   {JMP, &syscall38, NOP },
   {JMP, &syscall39, NOP },
-  {JMP, &syscall40, NOP },
-  {JMP, &syscall41, NOP },
-  {JMP, &syscall42, NOP },
-  {JMP, &syscall43, NOP },
-  {JMP, &syscall44, NOP },
-  {JMP, &syscall45, NOP },
-  {JMP, &syscall46, NOP },
-  {JMP, &syscall47, NOP },
-  {JMP, &syscall48, NOP },
-  {JMP, &syscall49, NOP },
-  {JMP, &syscall50, NOP },
-  {JMP, &syscall51, NOP },
-  {JMP, &syscall52, NOP },
-  {JMP, &syscall53, NOP },
-  {JMP, &syscall54, NOP },
-  {JMP, &syscall55, NOP },
-  {JMP, &syscall56, NOP },
-  {JMP, &syscall57, NOP },
-  {JMP, &syscall58, NOP },
-  {JMP, &syscall59, NOP },
-  {JMP, &syscall60, NOP },
-  {JMP, &syscall61, NOP },
-  {JMP, &syscall62, NOP },
-  {JMP, &syscall63, NOP },
-  {JMP, &syscall64, NOP }
+  {JMP, &syscall3A, NOP },
+  {JMP, &syscall3B, NOP },
+  {JMP, &syscall3C, NOP },
+  {JMP, &syscall3D, NOP },
+  {JMP, &syscall3E, NOP },
+  {JMP, &syscall3F, NOP },
+  {JMP, &SECURENTR, NOP },
+  {JMP, &SECUREXIT, NOP }
 };
 
 export align(0x100) struct SysCall[] TRAPS = {
-  { JMP, &reset, NOP },
+  { JMP, &RESET, NOP },
   { JMP, &pagfault, NOP },
   { JMP, &restorkey, NOP },
   { JMP, &alttabkey, NOP },
   { JMP, &vf011rd, NOP },
   { JMP, &vf011wr, NOP },
   { JMP, &reservd, NOP },
-  { JMP, &cpukil, NOP },
-  { JMP, &main, NOP }
+  { JMP, &cpukil, NOP }
 };

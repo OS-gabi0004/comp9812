@@ -24,6 +24,7 @@ al C:82c7 .syscall29
 al C:82c9 .syscall27
 al C:82c8 .syscall28
 al C:82ae .alttabkey
+al C:82de .SECURENTR
 al C:82c6 .syscall2A
 al C:82c5 .syscall2B
 al C:82c2 .syscall2E
@@ -31,7 +32,6 @@ al C:82c1 .syscall2F
 al C:82c4 .syscall2C
 al C:827a .memset
 al C:82c3 .syscall2D
-al C:82de .securentr
 al C:4 .str
 al C:82d0 .syscall1F
 al C:d021 .BGCOL
@@ -54,7 +54,7 @@ al C:82b1 .syscall3F
 al C:82b3 .syscall3D
 al C:82b2 .syscall3E
 al C:4 .sc
-al C:8322 .MESSAGE
+al C:82f0 .MESSAGE
 al C:d018 .VIC_MEMORY
 al C:d012 .RASTER
 al C:8000 .SYSCALLS
@@ -74,10 +74,10 @@ al C:825d .__b4
 al C:82bc .syscall34
 al C:82ab .reservd
 al C:82bb .syscall35
-al C:82f2 .syscall07
-al C:82ec .syscall08
-al C:82fe .syscall05
-al C:82f8 .syscall06
+al C:82e8 .syscall07
+al C:82e7 .syscall08
+al C:82ea .syscall05
+al C:82e9 .syscall06
 al C:82e6 .syscall09
 al C:d800 .COLS
 al C:82e3 .syscall0C
@@ -85,9 +85,9 @@ al C:82e2 .syscall0D
 al C:82e5 .syscall0A
 al C:82e4 .syscall0B
 al C:82aa .cpukil
-al C:82dd .securexit
-al C:831c .syscall00
-al C:830a .syscall03
-al C:8304 .syscall04
-al C:8316 .syscall01
-al C:8310 .syscall02
+al C:82ef .syscall00
+al C:82ec .syscall03
+al C:82eb .syscall04
+al C:82dd .SECUREXIT
+al C:82ee .syscall01
+al C:82ed .syscall02
