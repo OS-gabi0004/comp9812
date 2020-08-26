@@ -16,7 +16,7 @@ al C:8473 .syscall10
 al C:8463 .syscall14
 al C:845f .syscall15
 al C:8467 .syscall13
-al C:10 .current_screen_x
+al C:12 .current_screen_x
 al C:8413 .syscall29
 al C:841b .syscall27
 al C:8417 .syscall28
@@ -27,7 +27,7 @@ al C:83ff .syscall2E
 al C:83fb .syscall2F
 al C:8407 .syscall2C
 al C:8403 .syscall2D
-al C:84d1 .print_to_screen
+al C:84c1 .print_to_screen
 al C:8 .str
 al C:8437 .syscall1F
 al C:d021 .BGCOL
@@ -60,7 +60,7 @@ al C:83df .syscall36
 al C:83db .syscall37
 al C:83e7 .syscall34
 al C:83e3 .syscall35
-al C:84c1 .print_newline
+al C:84dd .print_newline
 al C:e .c
 al C:82aa .cpukil
 al C:846b .SECUREXIT
@@ -70,13 +70,13 @@ al C:6 .num
 al C:8200 .main
 al C:82c7 .RESET
 al C:82b3 .vf011wr
-al C:11 .current_screen_line
+al C:10 .current_screen_line
 al C:846f .SECURENTR
 al C:827a .memset
 al C:83b5 .exit_hypervisor
 al C:823f .__b1__0
 al C:8306 .__b1__1
-al C:84d1 .__b1__2
+al C:84c1 .__b1__2
 al C:8 .dst
 al C:d018 .VIC_MEMORY
 al C:d012 .RASTER
@@ -84,7 +84,7 @@ al C:6 .end
 al C:8265 .__b2__0
 al C:828f .__b2__1
 al C:833a .__b2__2
-al C:84da .__b2__3
+al C:84ca .__b2__3
 al C:8247 .__b3__0
 al C:829c .__b3__1
 al C:825d .__b4__0

@@ -14,8 +14,8 @@
   .const WHITE = 1
   .const JMP = $4c
   .const NOP = $ea
-  .label current_screen_line = $11
-  .label current_screen_x = $10
+  .label current_screen_line = $10
+  .label current_screen_x = $12
   lda #<0
   sta.z current_screen_line
   sta.z current_screen_line+1
@@ -523,12 +523,12 @@ syscall02: {
     rts
 }
 syscall01: {
+    jsr print_newline
     lda #<message
     sta.z print_to_screen.c
     lda #>message
     sta.z print_to_screen.c+1
     jsr print_to_screen
-    jsr print_newline
     jsr exit_hypervisor
     rts
   .segment Data
@@ -536,18 +536,6 @@ syscall01: {
     .byte 0
 }
 .segment Code
-print_newline: {
-    lda #$28
-    clc
-    adc.z current_screen_line
-    sta.z current_screen_line
-    bcc !+
-    inc.z current_screen_line+1
-  !:
-    lda #0
-    sta.z current_screen_x
-    rts
-}
 print_to_screen: {
     .label c = $e
   __b1:
@@ -568,13 +556,25 @@ print_to_screen: {
   !:
     jmp __b1
 }
+print_newline: {
+    lda #$28
+    clc
+    adc.z current_screen_line
+    sta.z current_screen_line
+    bcc !+
+    inc.z current_screen_line+1
+  !:
+    lda #0
+    sta.z current_screen_x
+    rts
+}
 syscall00: {
+    jsr print_newline
     lda #<message
     sta.z print_to_screen.c
     lda #>message
     sta.z print_to_screen.c+1
     jsr print_to_screen
-    jsr print_newline
     jsr exit_hypervisor
     rts
   .segment Data

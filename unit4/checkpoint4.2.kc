@@ -60,14 +60,14 @@ void print_newline() {
 }
 
 void syscall00() {
-  print_to_screen("syscall00 entered");
   print_newline();
+  print_to_screen("syscall00 entered");
   exit_hypervisor();
 }
 
 void syscall01() {
-  print_to_screen("syscall01 entered");
   print_newline();
+  print_to_screen("syscall01 entered");
   exit_hypervisor();
 }
 
