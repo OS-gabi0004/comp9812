@@ -474,7 +474,7 @@ syscall00: {
     rts
 }
 .segment Data
-  MESSAGE: .text "checkpoint 2.3 by gabi0004"
+  MESSAGE: .text "checkpoint 4.1 by gabi0004"
   .byte 0
 .segment Syscall
   SYSCALLS: .byte JMP
