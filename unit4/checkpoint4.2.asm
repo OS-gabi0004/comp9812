@@ -183,12 +183,6 @@ RESET: {
     lda #>$28*$19
     sta.z memset.num+1
     jsr memset
-    lda #<$400
-    sta.z current_screen_line
-    lda #>$400
-    sta.z current_screen_line+1
-    lda #0
-    sta.z current_screen_x
     lda #<SCREEN+$28
     sta.z sc
     lda #>SCREEN+$28
@@ -202,6 +196,12 @@ RESET: {
     lda (msg),y
     cmp #0
     bne __b2
+    lda #<$400
+    sta.z current_screen_line
+    lda #>$400
+    sta.z current_screen_line+1
+    tya
+    sta.z current_screen_x
     jsr start_simple_program
   __b4:
     lda #$36
