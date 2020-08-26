@@ -42,6 +42,23 @@ void undefined_trap() {
 
 }
 
+
+volatile unsigned char *current_screen_line = $0400;
+volatile unsigned char current_screen_x = 0;
+
+void print_to_screen(char* message) {
+  char *c = message;
+  while(*c) {
+    current_screen_line[current_screen_x++] = *c;
+    c++;
+  }
+}
+
+void print_newline() {
+  current_screen_line += 40;
+  current_screen_x = 0;
+}
+
 void syscall00() {
   print_to_screen("syscall00 entered"); 
   exit_hypervisor();
@@ -298,22 +315,6 @@ void syscall3E() {
 
 void syscall3F() {
   exit_hypervisor();
-}
-
-volatile unsigned char *current_screen_line = $0400;
-volatile unsigned char current_screen_x = 0;
-
-void print_to_screen(char* message) {
-  char *c = message;
-  while(*c) {
-    current_screen_line[current_screen_x++] = *c;
-    c++;
-  }
-}
-
-void print_newline() {
-  current_screen_line += 40;
-  current_screen_x = 0;
 }
 
 void start_simple_program() {
