@@ -331,12 +331,12 @@ void test_memory() {
   unsigned short mem_end = $8000;
 
   volatile unsigned char *p;
-  for (unsigned short i = mem_start; i < mem_end; i++) {
+  for (unsigned short i = mem_start; i < $7FFF; i++) {
     p = i;
-    for (unsigned char value = 0; value < 256; value++) {
+    for (unsigned char value = 0; value < 255; value++) {
       *p = value;
       if (*p != value) {
-	print_to_screen("memory error at $");
+      	print_to_screen("memory error at $");
 	print_hex(i);
 	print_newline();
 	mem_end = i-1;
@@ -348,10 +348,42 @@ void test_memory() {
   print_hex(mem_start);
   print_to_screen(" - $");
   print_hex(mem_end);
-  print_newline();u
+  print_newline();
 }
 
-char 
+char detect_vicii(unsigned short address) {
+ 
+  // Pointer where VIC-II is suspected to be
+  volatile unsigned char *p;
+  unsigned char v1, v2;
+  unsigned short i;
+  p = address;
+  v1=p[$12]; // Read start address + $12
+  // wait for at least 64 microseconds.
+  for (i=1; i<1000; i++) continue;
+  v2=p[$12]; // Read again
+  if (v2 > v1) {
+    print_to_screen("vic-ii detected at $");
+    print_hex(address);
+    print_newline();
+    return 1;
+  }
+
+  return 0;
+}
+
+void detect_devices() {
+  unsigned short mem_start = $D000;
+  unsigned short mem_end = $DFF0;
+
+  for (unsigned short i = mem_start; i <= mem_end; i = i + $10) {
+    char vicii = detect_vicii(i);
+    if (vicii == 1) {
+      break;
+    }
+  }
+}
+
 void RESET() {
   *VIC_MEMORY = 0x14;
   memset(SCREEN, ' ', 40*25);
@@ -361,7 +393,8 @@ void RESET() {
   print_newline();
   print_to_screen("testing hardware");
   print_newline();
-  test_memory();
+  detect_devices();
+  print_to_screen("finished probing devices");
 
   exit_hypervisor();
 }

@@ -333,7 +333,7 @@ void test_memory() {
   volatile unsigned char *p;
   for (unsigned short i = mem_start; i < $7FFF; i++) {
     p = i;
-    for (char value = 0; value < 255; value++) {
+    for (unsigned char value = 0; value < 255; value++) {
       *p = value;
       if (*p != value) {
       	print_to_screen("memory error at $");
