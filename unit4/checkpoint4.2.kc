@@ -352,9 +352,6 @@ void RESET() {
   char* sc = SCREEN+40;
   char* msg = MESSAGE;
 
-  current_screen_line = $0400;
-  current_screen_x = 0;
-
   while(*msg) {
     *sc++ = *msg++;
   }
@@ -369,7 +366,8 @@ void RESET() {
       *BGCOL = BLACK;
     }
   }
-
+  current_screen_line = $0400;
+  current_screen_x = 0;
   
 }
 
