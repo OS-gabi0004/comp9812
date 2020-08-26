@@ -476,6 +476,7 @@ export struct SysCall[] SYSCALLS = {
 
 export align(0x100) struct SysCall[] TRAPS = {
   { JMP, &RESET, NOP },
+  { JMP, &syscall00, NOP },
   { JMP, &pagfault, NOP },
   { JMP, &restorkey, NOP },
   { JMP, &alttabkey, NOP },
