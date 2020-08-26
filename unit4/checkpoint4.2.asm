@@ -197,6 +197,12 @@ RESET: {
     cmp #0
     bne __b2
     jsr start_simple_program
+    lda #<$400
+    sta.z current_screen_line
+    lda #>$400
+    sta.z current_screen_line+1
+    lda #0
+    sta.z current_screen_x
   __b4:
     lda #$36
     cmp RASTER

@@ -357,7 +357,8 @@ void RESET() {
   }
 
   start_simple_program();
-
+  current_screen_line = $0400;
+  current_screen_x = 0;
   while(true) {
     if(*RASTER==54 || *RASTER==66) {
       *BGCOL = WHITE;
@@ -366,8 +367,7 @@ void RESET() {
       *BGCOL = BLACK;
     }
   }
-  current_screen_line = $0400;
-  current_screen_x = 0;
+
   
 }
 
