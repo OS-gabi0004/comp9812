@@ -16,11 +16,9 @@
   .const NOP = $ea
   .label current_screen_line = $11
   .label current_screen_x = $10
-  lda #<$400
+  lda #<0
   sta.z current_screen_line
-  lda #>$400
   sta.z current_screen_line+1
-  lda #0
   sta.z current_screen_x
   jsr main
   rts
@@ -185,6 +183,12 @@ RESET: {
     lda #>$28*$19
     sta.z memset.num+1
     jsr memset
+    lda #<$400
+    sta.z current_screen_line
+    lda #>$400
+    sta.z current_screen_line+1
+    lda #0
+    sta.z current_screen_x
     lda #<SCREEN+$28
     sta.z sc
     lda #>SCREEN+$28
@@ -698,8 +702,6 @@ syscall00: {
   .align $100
   TRAPS: .byte JMP
   .word RESET
-  .byte NOP, JMP
-  .word syscall00
   .byte NOP, JMP
   .word pagfault
   .byte NOP, JMP

@@ -9,18 +9,18 @@ Writing prg file: /home/student/repo/unit4/checkpoint4.2.prg
 Memory Map
 ----------
 Default-segment:
-  $2000-$200f Default
+  $2000-$200b Default
 
 XMega65Bin-segment:
 
 Syscall-segment:
-  $8000-$8123 Syscall
+  $8000-$811f Syscall
 
 Code-segment:
-  $8200-$84dd Code
+  $8200-$84e9 Code
 
 Data-segment:
-  $84de-$851c Data
+  $84ea-$8528 Data
 
 Stack-segment:
 
