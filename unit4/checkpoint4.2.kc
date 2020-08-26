@@ -61,6 +61,7 @@ void print_newline() {
 
 void syscall00() {
   print_newline();
+  print_newline();
   print_to_screen("syscall00 entered");
   exit_hypervisor();
 }

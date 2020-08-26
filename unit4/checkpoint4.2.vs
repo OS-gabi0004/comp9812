@@ -49,7 +49,7 @@ al C:83c3 .syscall3D
 al C:83bf .syscall3E
 al C:4 .sc__0
 al C:c .sc__1
-al C:8523 .MESSAGE
+al C:8526 .MESSAGE
 al C:8000 .SYSCALLS
 al C:829b .__breturn
 al C:83ef .syscall32
@@ -98,8 +98,8 @@ al C:849b .syscall06
 al C:848f .syscall09
 al C:d800 .COLS
 al C:8483 .syscall0C
-al C:84ff .message__0
-al C:8511 .message__1
+al C:8502 .message__0
+al C:8514 .message__1
 al C:847f .syscall0D
 al C:848b .syscall0A
 al C:8487 .syscall0B

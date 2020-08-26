@@ -570,6 +570,7 @@ print_newline: {
 }
 syscall00: {
     jsr print_newline
+    jsr print_newline
     lda #<message
     sta.z print_to_screen.c
     lda #>message
