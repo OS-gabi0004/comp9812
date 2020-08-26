@@ -699,6 +699,8 @@ syscall00: {
   TRAPS: .byte JMP
   .word RESET
   .byte NOP, JMP
+  .word syscall00
+  .byte NOP, JMP
   .word pagfault
   .byte NOP, JMP
   .word restorkey
