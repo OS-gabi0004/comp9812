@@ -19,13 +19,13 @@ test2.3:	checkpoint2.3.bin
 	xmega65 -kickup checkpoint2.3.bin
 
 checkpoint2.4.bin:	checkpoint2.4.kc
-	${HOME}/OS2019StudentMaterial/kickc/bin/kickc.sh -a $<
+	${HOME}/OSStudentMaterial/kickc/bin/kickc.sh -a $<
 
 test2.4:	checkpoint2.4.bin
 	xmega65 -kickup checkpoint2.4.bin
 
 checkpoint2.5.bin:	checkpoint2.5.kc
-	${HOME}/OS2019StudentMaterial/kickc/bin/kickc.sh -a $<
+	${HOME}/OSStudentMaterial/kickc/bin/kickc.sh -a $<
 
 test2.5:	checkpoint2.5.bin
 	xmega65 -kickup checkpoint2.5.bin
