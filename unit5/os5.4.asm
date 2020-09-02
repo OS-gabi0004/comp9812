@@ -139,6 +139,11 @@ RESET: {
     jsr initialise_pdb
     lda #1
     jsr load_program
+    lda #0
+    sta.z resume_pdb.pdb_number
+    jsr resume_pdb
+    lda #1
+    sta.z resume_pdb.pdb_number
     jsr resume_pdb
   __b1:
     lda #$36
@@ -159,21 +164,43 @@ RESET: {
     .byte 0
 }
 .segment Code
+// resume_pdb(byte zeropage($e) pdb_number)
 resume_pdb: {
-    .const pdb_number = 0
-    .label p = stored_pdbs
+    .label __1 = $5c
+    .label __2 = $5c
     .label __7 = $36
-    .label ss = $52
+    .label p = $5c
+    .label ss = $5e
     .label i = $11
-    .label __17 = $5c
-    .label __18 = $5e
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    .label pdb_number = $e
+    .label __17 = $60
+    .label __18 = $52
+    lda.z pdb_number
+    sta.z __1
+    lda #0
+    sta.z __1+1
+    lda.z __2
+    sta.z __2+1
+    lda #0
+    sta.z __2
+    clc
+    lda.z p
+    adc #<stored_pdbs
+    sta.z p
+    lda.z p+1
+    adc #>stored_pdbs
+    sta.z p+1
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    lda (p),y
     sta.z dma_copy.src
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+1
+    iny
+    lda (p),y
     sta.z dma_copy.src+1
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+2
+    iny
+    lda (p),y
     sta.z dma_copy.src+2
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+3
+    iny
+    lda (p),y
     sta.z dma_copy.src+3
     lda #0
     sta.z dma_copy.dest
@@ -185,13 +212,17 @@ resume_pdb: {
     lda #>$400
     sta.z dma_copy.length+1
     jsr dma_copy
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    lda (p),y
     sta.z __7
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+1
+    iny
+    lda (p),y
     sta.z __7+1
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+2
+    iny
+    lda (p),y
     sta.z __7+2
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+3
+    iny
+    lda (p),y
     sta.z __7+3
     lda.z __7
     clc
@@ -220,9 +251,11 @@ resume_pdb: {
     sta.z dma_copy.length+1
     jsr dma_copy
     // Load stored CPU state into Hypervisor saved register area at $FFD3640
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE
+    lda (p),y
     sta.z ss
-    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE+1
+    iny
+    lda (p),y
     sta.z ss+1
     lda #<0
     sta.z i
@@ -243,10 +276,11 @@ resume_pdb: {
     // Set state of process to running
     // XXX - Set p->process_state to STATE_RUNNING
     lda #STATE_RUNNING
-    sta p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_PROCESS_STATE
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_PROCESS_STATE
+    sta (p),y
     // Mark this PDB as the running process
     //XXX - Set running_pdb to the PDB number we are resuming
-    lda #pdb_number
+    lda.z pdb_number
     sta.z running_pdb
     jsr exit_hypervisor
     rts
@@ -438,20 +472,20 @@ dma_copy: {
 }
 // load_program(byte register(A) pdb_number)
 load_program: {
-    .label __1 = $5c
-    .label __2 = $5c
+    .label __1 = $5e
+    .label __2 = $5e
     .label __30 = $58
     .label __31 = $58
     .label __34 = $36
     .label __35 = $36
-    .label pdb = $5c
-    .label n = $5e
-    .label i = $e
+    .label pdb = $5e
+    .label n = $60
+    .label i = $c
     .label new_address = $54
     .label address = $36
     .label length = $32
     .label dest = $4e
-    .label match = $c
+    .label match = $e
     sta.z __1
     lda #0
     sta.z __1+1
@@ -1125,12 +1159,12 @@ print_newline: {
     rts
 }
 // Copies the character c (an unsigned char) to the first num characters of the object pointed to by the argument str.
-// memset(void* zeropage($52) str, byte register(X) c, word zeropage($11) num)
+// memset(void* zeropage($5c) str, byte register(X) c, word zeropage($11) num)
 memset: {
     .label end = $11
-    .label dst = $52
+    .label dst = $5c
     .label num = $11
-    .label str = $52
+    .label str = $5c
     lda.z num
     bne !+
     lda.z num+1

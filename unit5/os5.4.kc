@@ -736,6 +736,7 @@ void RESET() {
   load_program(1);
 
   resume_pdb(0);
+  resume_pdb(1);
   //describe_pdb(0);
 
   while(true) {
