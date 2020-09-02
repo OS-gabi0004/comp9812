@@ -435,13 +435,6 @@ void syscall05() {
 }
 
 void syscall06() {
-  unsigned char pid;
-  struct process_descriptor_block *pdb = (struct process_descriptor_block*)((unsigned short) stored_pdbs+(((unsigned short)running_pdb)<<8));
-
-  print_to_screen("you are pid ");
-  print_hex(pdb->process_id);
-  print_to_screen(" in pdb  ");
-  print_hex();
   exit_hypervisor();
 }
 
@@ -685,13 +678,10 @@ void RESET() {
   print_newline();
   print_newline();
 
-  initialise_pdb(0,"program2.prg");
+  initialise_pdb(0,"program1.prg");
+
   load_program(0);
-
-  initialise_pdb(1,"program2.prg");
-  load_program(1);
-
-  //resume_pdb(0);
+  resume_pdb(0);
   //describe_pdb(0);
 
   while(true) {
