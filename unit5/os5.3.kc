@@ -680,8 +680,8 @@ void RESET() {
 
   initialise_pdb(0,"program1.prg");
 
-  load_program(0);
-  resume_pdb(0);
+  //load_program(0);
+  //resume_pdb(0);
 
   while(true) {
     if (*RASTER == 54 || * RASTER == 66) {
