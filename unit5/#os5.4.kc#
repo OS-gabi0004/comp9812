@@ -195,7 +195,7 @@ void resume_pdb(unsigned char pdb_number)
   //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
   //      complex reasons.)
   for (int i = 0; i < 63; i++) {
-    ((unsigned char *)$D640)[i] = ss[i];
+    ((unsigned char *)$D640)[62] = ss[i];
   }
   // Set state of process to running
   // XXX - Set p->process_state to STATE_RUNNING
@@ -435,6 +435,13 @@ void syscall05() {
 }
 
 void syscall06() {
+  unsigned char pid;
+  struct process_descriptor_block *pdb = (struct process_descriptor_block*)((unsigned short) stored_pdbs+(((unsigned short)running_pdb)<<8));
+
+  print_to_screen("you are pid ");
+  print_hex(pdb->process_id);
+  print_to_screen(" in pdb  ");
+  print_hex();
   exit_hypervisor();
 }
 
@@ -678,10 +685,13 @@ void RESET() {
   print_newline();
   print_newline();
 
-  initialise_pdb(0,"program1.prg");
-
+  initialise_pdb(0,"program2.prg");
   load_program(0);
-  resume_pdb(0);
+
+  initialise_pdb(1,"program2.prg");
+  load_program(1);
+
+  //resume_pdb(0);
   //describe_pdb(0);
 
   while(true) {

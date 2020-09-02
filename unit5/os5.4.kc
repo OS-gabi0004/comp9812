@@ -195,7 +195,7 @@ void resume_pdb(unsigned char pdb_number)
   //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
   //      complex reasons.)
   for (int i = 0; i < 63; i++) {
-    ((unsigned char *)$D640)[i] = ss[i];
+    ((unsigned char *)$D640)[62] = ss[i];
   }
   // Set state of process to running
   // XXX - Set p->process_state to STATE_RUNNING
