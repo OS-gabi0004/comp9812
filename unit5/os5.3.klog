@@ -17,10 +17,10 @@ Syscall-segment:
   $8000-$811f Syscall
 
 Code-segment:
-  $8200-$8a9b Code
+  $8200-$8b54 Code
 
 Data-segment:
-  $8a9c-$8b5c Data
+  $8b55-$8c15 Data
 
 Stack-segment:
 
