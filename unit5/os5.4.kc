@@ -735,7 +735,7 @@ void RESET() {
   initialise_pdb(1,"program2.prg");
   load_program(1);
 
-  //resume_pdb(0);
+  resume_pdb(0);
   //describe_pdb(0);
 
   while(true) {
