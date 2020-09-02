@@ -18,7 +18,7 @@ const char BLACK = 0;
 const char BLUE = 6;
 const char WHITE = 1;
 
-char[] MESSAGE = "checkpoint 5.3";
+char[] MESSAGE = "checkpoint 5.3 gabi0004";
 
 const unsigned char STATE_NOTRUNNING = $00;
 const unsigned char STATE_NEW = $01;
@@ -31,7 +31,7 @@ const unsigned char STATE_EXIT = $07;
 
 // Process Descriptor Block definition
 struct process_descriptor_block {
-   unsigned char process_id;
+  unsigned char process_id;
 
   unsigned char process_state;
 
