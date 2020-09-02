@@ -544,7 +544,7 @@ dma_copy: {
     .label __5 = $48
     .label __7 = $4c
     .label __9 = $50
-    .label dest = 4
+    .label src = 8
     .label list_request_format0a = $1c
     .label list_source_mb_option80 = $1d
     .label list_source_mb = $1e
@@ -558,7 +558,7 @@ dma_copy: {
     .label list_dest_addr = $28
     .label list_dest_bank = $2a
     .label list_modulo00 = $2b
-    .label src = 8
+    .label dest = 4
     .label length = 2
     lda #0
     sta.z list_request_format0a
@@ -1458,21 +1458,21 @@ pause_pdb: {
     sta.z p+1
     ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
     lda (p),y
-    sta.z dma_copy.dest
-    iny
-    lda (p),y
-    sta.z dma_copy.dest+1
-    iny
-    lda (p),y
-    sta.z dma_copy.dest+2
-    iny
-    lda (p),y
-    sta.z dma_copy.dest+3
-    lda #0
     sta.z dma_copy.src
+    iny
+    lda (p),y
     sta.z dma_copy.src+1
+    iny
+    lda (p),y
     sta.z dma_copy.src+2
+    iny
+    lda (p),y
     sta.z dma_copy.src+3
+    lda #0
+    sta.z dma_copy.dest
+    sta.z dma_copy.dest+1
+    sta.z dma_copy.dest+2
+    sta.z dma_copy.dest+3
     lda #<$400
     sta.z dma_copy.length
     lda #>$400
@@ -1493,24 +1493,24 @@ pause_pdb: {
     lda.z __7
     clc
     adc #<$800
-    sta.z dma_copy.dest
+    sta.z dma_copy.src
     lda.z __7+1
     adc #>$800
-    sta.z dma_copy.dest+1
+    sta.z dma_copy.src+1
     lda.z __7+2
     adc #0
-    sta.z dma_copy.dest+2
+    sta.z dma_copy.src+2
     lda.z __7+3
     adc #0
-    sta.z dma_copy.dest+3
-    lda #<$800
-    sta.z dma_copy.src
-    lda #>$800
-    sta.z dma_copy.src+1
-    lda #<$800>>$10
-    sta.z dma_copy.src+2
-    lda #>$800>>$10
     sta.z dma_copy.src+3
+    lda #<$800
+    sta.z dma_copy.dest
+    lda #>$800
+    sta.z dma_copy.dest+1
+    lda #<$800>>$10
+    sta.z dma_copy.dest+2
+    lda #>$800>>$10
+    sta.z dma_copy.dest+3
     lda #<$1800
     sta.z dma_copy.length
     lda #>$1800
@@ -1550,18 +1550,18 @@ pause_pdb: {
     sta.z running_pdb
     rts
   __b2:
-    lda.z ss
-    clc
-    adc.z i
-    sta.z __16
-    lda.z ss+1
-    adc.z i+1
-    sta.z __16+1
     lda #<$d640
     clc
     adc.z i
-    sta.z __17
+    sta.z __16
     lda #>$d640
+    adc.z i+1
+    sta.z __16+1
+    lda.z ss
+    clc
+    adc.z i
+    sta.z __17
+    lda.z ss+1
     adc.z i+1
     sta.z __17+1
     ldy #0

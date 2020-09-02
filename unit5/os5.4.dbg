@@ -3301,7 +3301,7 @@
       Code,$0048,__5
       Code,$004c,__7
       Code,$0050,__9
-      Code,$0004,dest
+      Code,$0008,src
       Code,$001c,list_request_format0a
       Code,$001d,list_source_mb_option80
       Code,$001e,list_source_mb
@@ -3315,7 +3315,7 @@
       Code,$0028,list_dest_addr
       Code,$002a,list_dest_bank
       Code,$002b,list_modulo00
-      Code,$0008,src
+      Code,$0004,dest
       Code,$0002,length
       Code,$8603,__b2
       Code,$8613,__b1
