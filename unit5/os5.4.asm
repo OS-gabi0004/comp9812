@@ -1595,10 +1595,10 @@ pause_pdb: {
     sta.z __1
     lda #0
     sta.z __1+1
-    lda.z __2
-    sta.z __2+1
-    lda #0
-    sta.z __2
+    asl.z __2
+    rol.z __2+1
+    asl.z __2
+    rol.z __2+1
     clc
     lda.z p
     adc #<stored_pdbs
