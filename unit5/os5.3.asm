@@ -41,7 +41,7 @@
   .label running_pdb = $2c
   .label pid_counter = $2d
   .label lpeek_value = $2e
-  .label current_screen_line = $b
+  .label current_screen_line = $d
   .label current_screen_x = $f
   // Which is the current running process?
   lda #$ff
@@ -131,6 +131,7 @@ RESET: {
     jsr print_newline
     jsr initialise_pdb
     jsr load_program
+    jsr resume_pdb
   __b1:
     lda #$36
     cmp RASTER
@@ -150,18 +151,287 @@ RESET: {
     .byte 0
 }
 .segment Code
+resume_pdb: {
+    .const pdb_number = 0
+    .label p = stored_pdbs
+    .label __7 = $43
+    .label ss = $4a
+    .label i = $b
+    .label __17 = $48
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    sta.z dma_copy.src
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+1
+    sta.z dma_copy.src+1
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+2
+    sta.z dma_copy.src+2
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+3
+    sta.z dma_copy.src+3
+    lda #0
+    sta.z dma_copy.dest
+    sta.z dma_copy.dest+1
+    sta.z dma_copy.dest+2
+    sta.z dma_copy.dest+3
+    lda #<$400
+    sta.z dma_copy.length
+    lda #>$400
+    sta.z dma_copy.length+1
+    jsr dma_copy
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    sta.z __7
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+1
+    sta.z __7+1
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+2
+    sta.z __7+2
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+3
+    sta.z __7+3
+    lda.z dma_copy.src
+    clc
+    adc #<$800
+    sta.z dma_copy.src
+    lda.z dma_copy.src+1
+    adc #>$800
+    sta.z dma_copy.src+1
+    lda.z dma_copy.src+2
+    adc #0
+    sta.z dma_copy.src+2
+    lda.z dma_copy.src+3
+    adc #0
+    sta.z dma_copy.src+3
+    lda #<$800
+    sta.z dma_copy.dest
+    lda #>$800
+    sta.z dma_copy.dest+1
+    lda #<$800>>$10
+    sta.z dma_copy.dest+2
+    lda #>$800>>$10
+    sta.z dma_copy.dest+3
+    lda #<$1800
+    sta.z dma_copy.length
+    lda #>$1800
+    sta.z dma_copy.length+1
+    jsr dma_copy
+    // Load stored CPU state into Hypervisor saved register area at $FFD3640
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE
+    sta.z ss
+    lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE+1
+    sta.z ss+1
+    lda #<0
+    sta.z i
+    sta.z i+1
+  //XXX - Use a for() loop to copy 63 bytes from ss[0]--ss[62] to ((unsigned char *)$D640)[0]
+  //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
+  //      complex reasons.)
+  __b1:
+    lda.z i+1
+    bmi __b2
+    cmp #>$3f
+    bcc __b2
+    bne !+
+    lda.z i
+    cmp #<$3f
+    bcc __b2
+  !:
+    // Set state of process to running
+    // XXX - Set p->process_state to STATE_RUNNING
+    lda #STATE_RUNNING
+    sta p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_PROCESS_STATE
+    // Mark this PDB as the running process
+    //XXX - Set running_pdb to the PDB number we are resuming
+    lda #pdb_number
+    sta.z running_pdb
+    jsr exit_hypervisor
+    rts
+  __b2:
+    lda.z ss
+    clc
+    adc.z i
+    sta.z __17
+    lda.z ss+1
+    adc.z i+1
+    sta.z __17+1
+    ldy #0
+    lda (__17),y
+    sta $d640+$3e
+    inc.z i
+    bne !+
+    inc.z i+1
+  !:
+    jmp __b1
+}
+exit_hypervisor: {
+    // Exit hypervisor
+    lda #1
+    sta $d67f
+    rts
+}
+// dma_copy(dword zeropage($43) src, dword zeropage(2) dest, word zeropage($b) length)
+dma_copy: {
+    .label __0 = $2f
+    .label __2 = $33
+    .label __4 = $4a
+    .label __5 = $37
+    .label __7 = $3b
+    .label __9 = $48
+    .label src = $43
+    .label list_request_format0a = $16
+    .label list_source_mb_option80 = $17
+    .label list_source_mb = $18
+    .label list_dest_mb_option81 = $19
+    .label list_dest_mb = $1a
+    .label list_end_of_options00 = $1b
+    .label list_cmd = $1c
+    .label list_size = $1d
+    .label list_source_addr = $1f
+    .label list_source_bank = $21
+    .label list_dest_addr = $22
+    .label list_dest_bank = $24
+    .label list_modulo00 = $25
+    .label dest = 2
+    .label length = $b
+    lda #0
+    sta.z list_request_format0a
+    sta.z list_source_mb_option80
+    sta.z list_source_mb
+    sta.z list_dest_mb_option81
+    sta.z list_dest_mb
+    sta.z list_end_of_options00
+    sta.z list_cmd
+    sta.z list_size
+    sta.z list_size+1
+    sta.z list_source_addr
+    sta.z list_source_addr+1
+    sta.z list_source_bank
+    sta.z list_dest_addr
+    sta.z list_dest_addr+1
+    sta.z list_dest_bank
+    sta.z list_modulo00
+    lda #$a
+    sta.z list_request_format0a
+    lda #$80
+    sta.z list_source_mb_option80
+    lda #$81
+    sta.z list_dest_mb_option81
+    lda #0
+    sta.z list_end_of_options00
+    sta.z list_cmd
+    sta.z list_modulo00
+    lda.z length
+    sta.z list_size
+    lda.z length+1
+    sta.z list_size+1
+    ldx #$14
+    lda.z dest
+    sta.z __0
+    lda.z dest+1
+    sta.z __0+1
+    lda.z dest+2
+    sta.z __0+2
+    lda.z dest+3
+    sta.z __0+3
+    cpx #0
+    beq !e+
+  !:
+    lsr.z __0+3
+    ror.z __0+2
+    ror.z __0+1
+    ror.z __0
+    dex
+    bne !-
+  !e:
+    lda.z __0
+    sta.z list_dest_mb
+    lda #0
+    sta.z __2+2
+    sta.z __2+3
+    lda.z dest+3
+    sta.z __2+1
+    lda.z dest+2
+    sta.z __2
+    lda #$7f
+    and.z __2
+    sta.z list_dest_bank
+    lda.z dest
+    sta.z __4
+    lda.z dest+1
+    sta.z __4+1
+    lda.z __4
+    sta.z list_dest_addr
+    lda.z __4+1
+    sta.z list_dest_addr+1
+    ldx #$14
+    lda.z src
+    sta.z __5
+    lda.z src+1
+    sta.z __5+1
+    lda.z src+2
+    sta.z __5+2
+    lda.z src+3
+    sta.z __5+3
+    cpx #0
+    beq !e+
+  !:
+    lsr.z __5+3
+    ror.z __5+2
+    ror.z __5+1
+    ror.z __5
+    dex
+    bne !-
+  !e:
+    lda.z __5
+    // Work around missing fragments in KickC
+    sta.z list_source_mb
+    lda #0
+    sta.z __7+2
+    sta.z __7+3
+    lda.z src+3
+    sta.z __7+1
+    lda.z src+2
+    sta.z __7
+    lda #$7f
+    and.z __7
+    sta.z list_source_bank
+    lda.z src
+    sta.z __9
+    lda.z src+1
+    sta.z __9+1
+    lda.z __9
+    sta.z list_source_addr
+    lda.z __9+1
+    sta.z list_source_addr+1
+    // DMA list lives in hypervisor memory, so use correct list address
+    // when triggering
+    // (Variables in KickC usually end up in ZP, so we have to provide the
+    // base page correction
+    lda #0
+    cmp #>list_request_format0a
+    beq __b1
+    lda #>list_request_format0a
+    sta $d701
+  __b2:
+    lda #$7f
+    sta $d702
+    lda #$ff
+    sta $d704
+    lda #<list_request_format0a
+    sta $d705
+    rts
+  __b1:
+    lda #$bf+(>list_request_format0a)
+    sta $d701
+    jmp __b2
+}
 load_program: {
     .label pdb = stored_pdbs
-    .label __30 = $33
-    .label __31 = $33
-    .label __34 = 2
-    .label __35 = 2
-    .label n = $48
-    .label c2 = $37
-    .label new_address = $2f
-    .label address = 2
+    .label __30 = $43
+    .label __31 = $43
+    .label __34 = 6
+    .label __35 = 6
+    .label n = $4a
+    .label c2 = $47
+    .label new_address = $3f
+    .label address = 6
     .label length = $2a
-    .label dest = 6
+    .label dest = 2
     .label match = $a
     lda #0
     sta.z match
@@ -422,10 +692,10 @@ load_program: {
     iny
     jmp __b2
 }
-// lpeek(dword zeropage($33) address)
+// lpeek(dword zeropage($43) address)
 lpeek: {
     .label t = $26
-    .label address = $33
+    .label address = $43
     // Work around all sorts of fun problems in KickC
     //  dma_copy(address,$BF00+((unsigned short)<&lpeek_value),1);  
     lda #<lpeek_value
@@ -484,169 +754,13 @@ lpeek: {
     sta.z t+3
     jmp __b2
 }
-// dma_copy(dword zeropage($33) src, dword zeropage(6) dest, word zeropage($d) length)
-dma_copy: {
-    .label __0 = $38
-    .label __2 = $3c
-    .label __4 = $48
-    .label __5 = $40
-    .label __7 = $44
-    .label __9 = $4a
-    .label list_request_format0a = $16
-    .label list_source_mb_option80 = $17
-    .label list_source_mb = $18
-    .label list_dest_mb_option81 = $19
-    .label list_dest_mb = $1a
-    .label list_end_of_options00 = $1b
-    .label list_cmd = $1c
-    .label list_size = $1d
-    .label list_source_addr = $1f
-    .label list_source_bank = $21
-    .label list_dest_addr = $22
-    .label list_dest_bank = $24
-    .label list_modulo00 = $25
-    .label src = $33
-    .label dest = 6
-    .label length = $d
-    lda #0
-    sta.z list_request_format0a
-    sta.z list_source_mb_option80
-    sta.z list_source_mb
-    sta.z list_dest_mb_option81
-    sta.z list_dest_mb
-    sta.z list_end_of_options00
-    sta.z list_cmd
-    sta.z list_size
-    sta.z list_size+1
-    sta.z list_source_addr
-    sta.z list_source_addr+1
-    sta.z list_source_bank
-    sta.z list_dest_addr
-    sta.z list_dest_addr+1
-    sta.z list_dest_bank
-    sta.z list_modulo00
-    lda #$a
-    sta.z list_request_format0a
-    lda #$80
-    sta.z list_source_mb_option80
-    lda #$81
-    sta.z list_dest_mb_option81
-    lda #0
-    sta.z list_end_of_options00
-    sta.z list_cmd
-    sta.z list_modulo00
-    lda.z length
-    sta.z list_size
-    lda.z length+1
-    sta.z list_size+1
-    ldx #$14
-    lda.z dest
-    sta.z __0
-    lda.z dest+1
-    sta.z __0+1
-    lda.z dest+2
-    sta.z __0+2
-    lda.z dest+3
-    sta.z __0+3
-    cpx #0
-    beq !e+
-  !:
-    lsr.z __0+3
-    ror.z __0+2
-    ror.z __0+1
-    ror.z __0
-    dex
-    bne !-
-  !e:
-    lda.z __0
-    sta.z list_dest_mb
-    lda #0
-    sta.z __2+2
-    sta.z __2+3
-    lda.z dest+3
-    sta.z __2+1
-    lda.z dest+2
-    sta.z __2
-    lda #$7f
-    and.z __2
-    sta.z list_dest_bank
-    lda.z dest
-    sta.z __4
-    lda.z dest+1
-    sta.z __4+1
-    lda.z __4
-    sta.z list_dest_addr
-    lda.z __4+1
-    sta.z list_dest_addr+1
-    ldx #$14
-    lda.z src
-    sta.z __5
-    lda.z src+1
-    sta.z __5+1
-    lda.z src+2
-    sta.z __5+2
-    lda.z src+3
-    sta.z __5+3
-    cpx #0
-    beq !e+
-  !:
-    lsr.z __5+3
-    ror.z __5+2
-    ror.z __5+1
-    ror.z __5
-    dex
-    bne !-
-  !e:
-    lda.z __5
-    // Work around missing fragments in KickC
-    sta.z list_source_mb
-    lda #0
-    sta.z __7+2
-    sta.z __7+3
-    lda.z src+3
-    sta.z __7+1
-    lda.z src+2
-    sta.z __7
-    lda #$7f
-    and.z __7
-    sta.z list_source_bank
-    lda.z src
-    sta.z __9
-    lda.z src+1
-    sta.z __9+1
-    lda.z __9
-    sta.z list_source_addr
-    lda.z __9+1
-    sta.z list_source_addr+1
-    // DMA list lives in hypervisor memory, so use correct list address
-    // when triggering
-    // (Variables in KickC usually end up in ZP, so we have to provide the
-    // base page correction
-    lda #0
-    cmp #>list_request_format0a
-    beq __b1
-    lda #>list_request_format0a
-    sta $d701
-  __b2:
-    lda #$7f
-    sta $d702
-    lda #$ff
-    sta $d704
-    lda #<list_request_format0a
-    sta $d705
-    rts
-  __b1:
-    lda #$bf+(>list_request_format0a)
-    sta $d701
-    jmp __b2
-}
 // Setup a new process descriptor block
 initialise_pdb: {
     .label p = stored_pdbs
     .label pn = $48
-    .label i1 = $d
-    .label ss = $4a
-    .label __32 = $4e
+    .label i1 = $b
+    .label ss = $4e
+    .label __32 = $4a
     .label __33 = $4c
     jsr next_free_pid
     lda.z next_free_pid.pid
@@ -751,7 +865,7 @@ next_free_pid: {
     .label __2 = $4e
     .label pid = $a
     .label p = $4e
-    .label i = $d
+    .label i = $b
     inc.z pid_counter
     // Start with the next process ID
     lda.z pid_counter
@@ -814,11 +928,11 @@ print_newline: {
     rts
 }
 // Copies the character c (an unsigned char) to the first num characters of the object pointed to by the argument str.
-// memset(void* zeropage($48) str, byte register(X) c, word zeropage($d) num)
+// memset(void* zeropage($48) str, byte register(X) c, word zeropage($4a) num)
 memset: {
-    .label end = $d
+    .label end = $4a
     .label dst = $48
-    .label num = $d
+    .label num = $4a
     .label str = $48
     lda.z num
     bne !+
@@ -853,12 +967,6 @@ memset: {
 }
 syscall3F: {
     jsr exit_hypervisor
-    rts
-}
-exit_hypervisor: {
-    // Exit hypervisor
-    lda #1
-    sta $d67f
     rts
 }
 syscall3E: {
