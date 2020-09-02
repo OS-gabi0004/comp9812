@@ -28,8 +28,6 @@ enable_syscalls: {
     rts
 }
 yield: {
-    lda #0
-    sta $427
     jsr enable_syscalls
     lda #0
     sta $d645

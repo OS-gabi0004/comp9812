@@ -482,7 +482,7 @@ void syscall06() {
 
   print_to_screen("you are pid ");
   print_hex(pdb->process_id);
-  print_to_screen(" in pdb  ");
+  print_to_screen(" in pdb ");
   print_hex(running_pdb);
   print_newline();
 
@@ -735,8 +735,8 @@ void RESET() {
   initialise_pdb(1,"program2.prg");
   load_program(1);
 
-  resume_pdb(0);
-  resume_pdb(1);
+  // resume_pdb(0);
+  //resume_pdb(1);
   //describe_pdb(0);
 
   while(true) {

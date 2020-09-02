@@ -14,8 +14,6 @@ main: {
     jmp __b1
 }
 yield: {
-    lda #0
-    sta $427
     jsr enable_syscalls
     lda #0
     sta $d645

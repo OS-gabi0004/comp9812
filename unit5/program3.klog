@@ -9,6 +9,6 @@ Memory Map
 ----------
 Default-segment:
   $0801-$080c Basic
-  $080d-$085d Program
+  $080d-$0858 Program
 
 Writing Vice symbol file: /home/student/repo/unit5/program3.vs
