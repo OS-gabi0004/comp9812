@@ -18,14 +18,32 @@ const char BLACK = 0;
 const char BLUE = 6;
 const char WHITE = 1;
 
-char[] MESSAGE = "checkpoint 5.2";
+char[] MESSAGE = "checkpoint 5.2 gabi0004";
 
 const unsigned char STATE_NOTRUNNING = $00;
 const unsigned char STATE_RUNNING = $01;
 
 // Process Descriptor Block definition
 struct process_descriptor_block {
- XXX - Copy in your content from os5.1.kc 
+  // Copy in your content from os5.1.kc
+  // Unique identifier for the process
+  unsigned char process_id;
+
+  // Current state of the process
+  unsigned char process_state;
+
+  // Human readable name of the process
+  char* process_name;
+  
+  // Where this process is stored when not running
+  // i.e., where in the $20000-$5FFFF memory range the
+  // process is stored when not running.
+  unsigned long storage_start_address;
+  unsigned long storage_end_address;
+ 
+  // Stored registers and related machine state for this
+  // process (for the $D640-$D67E machine state registers)
+  unsigned char* stored_state;
 };
 
 // Process stored state will live at $C000-$C7FF, with 256 bytes
@@ -153,34 +171,38 @@ void initialise_pdb(unsigned char pdb_number,char *name)
     =(struct process_descriptor_block *)(((unsigned short)stored_pdbs)+(((unsigned short)pdb_number)<<8));
 
   // Setup process ID
-  XXX - Call the function next_free_pid() to get a process ID for the
-  process in this PDB, and store it in p->process_id
+  //XXX - Call the function next_free_pid() to get a process ID for the
+  //process in this PDB, and store it in p->process_id
+  p->process_id = next_free_pid();
 
   // Setup process name 
   // (32 bytes space for each to fit 16 chars + nul)
   // (we could just use 17 bytes, but kickc can't multiply by 17)
   p->process_name=process_names+(((short)i)<<5);
-  XXX - copy the string in the array 'name' into the array 'p->process_name'
-  XXX - To make your life easier, do something like char *pn=p->process_name
-        Then you can just do something along the lines of pn[...]=name[...] 
-        in a loop to copy the name into place.
-        (The arrays are both 17 bytes long)
-
+  //XXX - copy the string in the array 'name' into the array 'p->process_name'
+  //XXX - To make your life easier, do something like char *pn=p->process_name
+  //      Then you can just do something along the lines of pn[...]=name[...] 
+  //      in a loop to copy the name into place.
+  //      (The arrays are both 17 bytes long)
+  char *pn=p->process_name;
+  for(int i = 0; i < 17; i++) {
+    pn[i] = name[i];
+  }
   // Set process state as not running.
-  XXX - Put the value STATE_NOTRUNNING into p->process_state
-
+  // XXX - Put the value STATE_NOTRUNNING into p->process_state
+  p->process_state = STATE_NOTRUNNING;
   // Set stored memory area
   // (for now, we just use fixed 8KB steps from $30000-$3FFFF
   // corresponding to the PDB number
-  XXX - Set p->storage_start_address to the correct start address
-  for a process that is in this PDB.
-  The correct address is $30000 + (((unsigned dword)pdb_number)*$2000);
+  // XXX - Set p->storage_start_address to the correct start address
+  // for a process that is in this PDB.
+  // The correct address is $30000 + (((unsigned dword)pdb_number)*$2000);
+  p->storage_start_address = $30000 + (((unsigned dword)pdb_number)*$2000);
 
-
-  XXX - Then do the same for the end address of the process
-  This gets stored into p->storage_end_address and the correct
-  address is $31FFF + (((unsigned dword)pdb_number)*$2000);
-
+  // XXX - Then do the same for the end address of the process
+  // This gets stored into p->storage_end_address and the correct
+  // address is $31FFF + (((unsigned dword)pdb_number)*$2000);
+  p->storage_end_address = $31FFF + (((unsigned dword)pdb_number)*$2000);
   // Initialise processor state for standard entry at $080D
   // Everything to zero, except for a few things we will set manually
 
@@ -188,32 +210,35 @@ void initialise_pdb(unsigned char pdb_number,char *name)
   p->stored_state=process_context_states+(((unsigned short)pdb_number)<<6);
   unsigned char *ss=p->stored_state;
 
-  XXX - Set all 64 bytes of the array 'ss' to zero, to clear the context
-  switching state
+  //XXX - Set all 64 bytes of the array 'ss' to zero, to clear the context
+  //switching state
   for(i=0;i<63;i++) ss[i] = $00;
 
   // Set tandard CPU flags (8-bit stack, interrupts disabled)
   ss[7] = $24;
 
-  XXX - Set the stack pointer to $01FF
-  (This requires a bit of fiddly pointer arithmetic, so to save you 
-  the trouble working it out, you can use the following as the left 
-  side of the expression:   *(unsigned short *)&ss[x] = ...
-  where x is the offset of the stack pointer low byte (SPL) in the
-  Hypervisor saved state registers in Appendix D of the MEGA65 User's
-  Guide. i.e., if it were at $D640, x would be replaced with 0, and
-  if it were at $D641, x would be replaced with 1, and so on.
-  XXX - Note that the MEGA65 User's Guide has been updated on FLO.
-  You will required the latest version, as otherwise SPL is not listed.
+  // XXX - Set the stack pointer to $01FF
+  //(This requires a bit of fiddly pointer arithmetic, so to save you 
+  //the trouble working it out, you can use the following as the left 
+  //side of the expression:   *(unsigned short *)&ss[x] = ...
+  //where x is the offset of the stack pointer low byte (SPL) in the
+  //Hypervisor saved state registers in Appendix D of the MEGA65 User's
+  //Guide. i.e., if it were at $D640, x would be replaced with 0, and
+  //if it were at $D641, x would be replaced with 1, and so on.
+  //XXX - Note that the MEGA65 User's Guide has been updated on FLO.
+  //You will required the latest version, as otherwise SPL is not listed.
+  int x = 5;
+  *(unsigned short *)&ss[x] = $01FF;
 
-  XXX - Set the program counter to $080D
-  (This requires a bit of fiddly pointer arithmetic, so to save you 
-  the trouble working it out, you can use the following as the left 
-  side of the expression:   *(unsigned short *)&ss[x] = ...
-  where x is the offset of the program counter low byte (PCL) in the
-  Hypervisor saved state registers in Appendix D of the MEGA65 User's
-  Guide.
-
+  //XXX - Set the program counter to $080D
+  //(This requires a bit of fiddly pointer arithmetic, so to save you 
+  //the trouble working it out, you can use the following as the left 
+  //side of the expression:   *(unsigned short *)&ss[x] = ...
+  //where x is the offset of the program counter low byte (PCL) in the
+  //Hypervisor saved state registers in Appendix D of the MEGA65 User's
+  //Guide.
+  x = 8;
+  *(unsigned short *)&ss[x] = $080D;
 
   return;
 }
@@ -229,21 +254,408 @@ void exit_hypervisor()
 	*(char *)$D67F = $01;
 }
 
-XXX - Add syscall handler functions here
+//XXX - Add syscall handler functions here
+void undefined_trap() {
 
-XXX - Add your RESET() function here
+}
 
+void syscall00() {
+  exit_hypervisor();
+}
 
-XXX - Add the following line inside your RESET() function just
-      before the "//Loop forever with 2 bars" line
-    current_screen_line = SCREEN;
-    print_newline();
-    print_newline();
-    print_newline();
+void syscall01() {
+  exit_hypervisor();
+}
 
-    initialise_pdb(0,"program1.prg");
-    describe_pdb(0);
+void syscall02() {
+  exit_hypervisor();
+}
 
+void syscall03() {
+  exit_hypervisor();
+}
 
-XXX - Add the missing system traps and entry point tables here
-XXX - (And don't forget to include the #pragma line to force them into the syscall segment)
+void syscall04() {
+  exit_hypervisor();
+}
+
+void syscall05() {
+  exit_hypervisor();
+}
+
+void syscall06() {
+  exit_hypervisor();
+}
+
+void syscall07() {
+  exit_hypervisor();
+}
+
+void syscall08() {
+  exit_hypervisor();
+}
+
+void syscall09() {
+  exit_hypervisor();
+}
+
+void syscall0A() {
+  exit_hypervisor();
+}
+
+void syscall0B() {
+  exit_hypervisor();
+}
+
+void syscall0C() {
+  exit_hypervisor();
+}
+
+void syscall0D() {
+  exit_hypervisor();
+}
+
+void syscall0E() {
+  exit_hypervisor();
+}
+
+void syscall0F() {
+  exit_hypervisor();
+}
+
+void syscall10() {
+  exit_hypervisor();
+}
+
+void SECURENTR() {
+  exit_hypervisor();
+}
+
+void SECUREXIT() {
+  exit_hypervisor();
+}
+
+void syscall13() {
+  exit_hypervisor();
+}
+
+void syscall14() {
+  exit_hypervisor();
+}
+
+void syscall15() {
+  exit_hypervisor();
+}
+
+void syscall16() {
+  exit_hypervisor();
+}
+
+void syscall17() {
+  exit_hypervisor();
+}
+
+void syscall18() {
+  exit_hypervisor();
+}
+
+void syscall19() {
+  exit_hypervisor();
+}
+
+void syscall1A() {
+  exit_hypervisor();
+}
+
+void syscall1B() {
+  exit_hypervisor();
+}
+
+void syscall1C() {
+  exit_hypervisor();
+}
+
+void syscall1D() {
+  exit_hypervisor();
+}
+
+void syscall1E() {
+  exit_hypervisor();
+}
+
+void syscall1F() {
+  exit_hypervisor();
+}
+
+void syscall20() {
+  exit_hypervisor();
+}
+
+void syscall21() {
+  exit_hypervisor();
+}
+
+void syscall22() {
+  exit_hypervisor();
+}
+
+void syscall23() {
+  exit_hypervisor();
+}
+
+void syscall24() {
+  exit_hypervisor();
+}
+
+void syscall25() {
+  exit_hypervisor();
+}
+
+void syscall26() {
+  exit_hypervisor();
+}
+
+void syscall27() {
+  exit_hypervisor();
+}
+
+void syscall28() {
+  exit_hypervisor();
+}
+
+void syscall29() {
+  exit_hypervisor();
+}
+
+void syscall2A() {
+  exit_hypervisor();
+}
+
+void syscall2B() {
+  exit_hypervisor();
+}
+
+void syscall2C() {
+  exit_hypervisor();
+}
+
+void syscall2D() {
+  exit_hypervisor();
+}
+
+void syscall2E() {
+  exit_hypervisor();
+}
+
+void syscall2F() {
+  exit_hypervisor();
+}
+
+void syscall30() {
+  exit_hypervisor();
+}
+
+void syscall31() {
+  exit_hypervisor();
+}
+
+void syscall32() {
+  exit_hypervisor();
+}
+
+void syscall33() {
+  exit_hypervisor();
+}
+
+void syscall34() {
+  exit_hypervisor();
+}
+
+void syscall35() {
+  exit_hypervisor();
+}
+
+void syscall36() {
+  exit_hypervisor();
+}
+
+void syscall37() {
+  exit_hypervisor();
+}
+
+void syscall38() {
+  exit_hypervisor();
+}
+
+void syscall39() {
+  exit_hypervisor();
+}
+
+void syscall3A() {
+  exit_hypervisor();
+}
+
+void syscall3B() {
+  exit_hypervisor();
+}
+
+void syscall3C() {
+  exit_hypervisor();
+}
+
+void syscall3D() {
+  exit_hypervisor();
+}
+
+void syscall3E() {
+  exit_hypervisor();
+}
+
+void syscall3F() {
+  exit_hypervisor();
+}
+
+//XXX - Add your RESET() function here
+void RESET() {
+  *VIC_MEMORY = 0x14;
+  memset(SCREEN, ' ', 40*25);
+  memset(COLS, WHITE, 40*25);
+
+  current_screen_line = SCREEN;
+  print_newline();
+  print_newline();
+  print_newline();
+
+  initialise_pdb(0,"program1.prg");
+  describe_pdb(0);
+
+  while(true) {
+    if (*RASTER == 54 || * RASTER == 66) {
+      *BGCOL = WHITE;
+    }
+    else {
+      *BGCOL = BLACK;
+    }
+  }
+
+  exit_hypervisor();
+}
+
+//XXX - Add the missing system traps and entry point tables here
+//XXX - (And don't forget to include the #pragma line to force them into the syscall segment)
+void pagfault() {
+  undefined_trap();
+}
+
+void restorkey() {
+  undefined_trap();
+}
+
+void alttabkey() {
+  undefined_trap();
+}
+
+void vf011rd() {
+  undefined_trap();
+}
+
+void vf011wr() {
+  undefined_trap();
+}
+
+void reservd() {
+  undefined_trap();
+}
+
+void cpukil() {
+  undefined_trap();
+}
+
+#pragma data_seg(Syscall)
+
+struct SysCall {
+  char xjmp;
+  void()* syscall;
+  char xnop;
+};
+
+const char JMP = 0x4c;
+const char NOP = 0xea;
+
+export struct SysCall[] SYSCALLS = {
+  {JMP, &syscall00, NOP },
+  {JMP, &syscall01, NOP },
+  {JMP, &syscall02, NOP },
+  {JMP, &syscall03, NOP },
+  {JMP, &syscall04, NOP },
+  {JMP, &syscall05, NOP },
+  {JMP, &syscall06, NOP },
+  {JMP, &syscall07, NOP },
+  {JMP, &syscall08, NOP },
+  {JMP, &syscall09, NOP },
+  {JMP, &syscall0A, NOP },
+  {JMP, &syscall0B, NOP },
+  {JMP, &syscall0C, NOP },
+  {JMP, &syscall0D, NOP },
+  {JMP, &syscall0E, NOP },
+  {JMP, &syscall0F, NOP },
+  {JMP, &syscall10, NOP },
+  {JMP, &syscall13, NOP },
+  {JMP, &syscall14, NOP },
+  {JMP, &syscall15, NOP },
+  {JMP, &syscall16, NOP },
+  {JMP, &syscall17, NOP },
+  {JMP, &syscall18, NOP },
+  {JMP, &syscall19, NOP },
+  {JMP, &syscall1A, NOP },
+  {JMP, &syscall1B, NOP },
+  {JMP, &syscall1C, NOP },
+  {JMP, &syscall1D, NOP },
+  {JMP, &syscall1E, NOP },
+  {JMP, &syscall1F, NOP },
+  {JMP, &syscall20, NOP },
+  {JMP, &syscall21, NOP },
+  {JMP, &syscall22, NOP },
+  {JMP, &syscall23, NOP },
+  {JMP, &syscall23, NOP },
+  {JMP, &syscall25, NOP },
+  {JMP, &syscall26, NOP },
+  {JMP, &syscall27, NOP },
+  {JMP, &syscall28, NOP },
+  {JMP, &syscall29, NOP },
+  {JMP, &syscall2A, NOP },
+  {JMP, &syscall2B, NOP },
+  {JMP, &syscall2C, NOP },
+  {JMP, &syscall2D, NOP },
+  {JMP, &syscall2E, NOP },
+  {JMP, &syscall2F, NOP },
+  {JMP, &syscall30, NOP },
+  {JMP, &syscall31, NOP },
+  {JMP, &syscall32, NOP },
+  {JMP, &syscall33, NOP },
+  {JMP, &syscall34, NOP },
+  {JMP, &syscall35, NOP },
+  {JMP, &syscall36, NOP },
+  {JMP, &syscall37, NOP },
+  {JMP, &syscall38, NOP },
+  {JMP, &syscall39, NOP },
+  {JMP, &syscall3A, NOP },
+  {JMP, &syscall3B, NOP },
+  {JMP, &syscall3C, NOP },
+  {JMP, &syscall3D, NOP },
+  {JMP, &syscall3E, NOP },
+  {JMP, &syscall3F, NOP },
+  {JMP, &SECURENTR, NOP },
+  {JMP, &SECUREXIT, NOP }
+};
+
+export align(0x100) struct SysCall[] TRAPS = {
+  { JMP, &RESET, NOP },
+  { JMP, &pagfault, NOP },
+  { JMP, &restorkey, NOP },
+  { JMP, &alttabkey, NOP },
+  { JMP, &vf011rd, NOP },
+  { JMP, &vf011wr, NOP },
+  { JMP, &reservd, NOP },
+  { JMP, &cpukil, NOP }
+};

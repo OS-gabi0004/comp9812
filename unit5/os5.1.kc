@@ -18,7 +18,7 @@ const char BLACK = 0;
 const char BLUE = 6;
 const char WHITE = 1;
 
-char[] MESSAGE = "checkpoint 5.1 by gabi0004";
+char[] MESSAGE = "checkpoint 5.1 gabi0004";
 
 const unsigned char STATE_NOTRUNNING = $00;
 const unsigned char STATE_RUNNING = $01;
@@ -135,7 +135,6 @@ void describe_pdb(unsigned char pdb_number)
   unsigned short *ss=p->stored_state;
   print_hex(ss[4]);
   print_newline();
-
 
 }
 
