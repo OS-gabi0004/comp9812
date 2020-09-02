@@ -37,7 +37,7 @@ test5.3:	os5.3.bin packed.bin
 	./check_if_committed && xmega65 -loadrom packed.bin -kickup os5.3.bin
 
 os5.3.bin:	os5.3.kc
-	${HOME}/OSStudentMaterial/kickc/bin/kickc.sh -a $<
+	${HOME}/OS2019StudentMaterial/kickc/bin/kickc.sh -a $<
 
 test5.4:	os5.4.bin packed.bin
 	./check_if_committed && xmega65 -loadrom packed.bin -kickup os5.4.bin
