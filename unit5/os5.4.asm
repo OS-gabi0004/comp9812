@@ -38,11 +38,11 @@
   .label process_context_states = $c900
   .const JMP = $4c
   .const NOP = $ea
-  .label running_pdb = $13
-  .label pid_counter = $d
-  .label lpeek_value = $32
-  .label current_screen_line = $f
-  .label current_screen_x = $17
+  .label running_pdb = $14
+  .label pid_counter = $e
+  .label lpeek_value = $31
+  .label current_screen_line = $10
+  .label current_screen_x = $16
   // Which is the current running process?
   lda #$ff
   sta.z running_pdb
@@ -139,6 +139,9 @@ RESET: {
     jsr initialise_pdb
     lda #1
     jsr load_program
+    lda #0
+    sta.z resume_pdb.pdb_number
+    jsr resume_pdb
   __b1:
     lda #$36
     cmp RASTER
@@ -158,22 +161,328 @@ RESET: {
     .byte 0
 }
 .segment Code
+// resume_pdb(byte zeropage(2) pdb_number)
+resume_pdb: {
+    .label __1 = $32
+    .label __2 = $32
+    .label __7 = 9
+    .label p = $32
+    .label ss = $3e
+    .label i = 3
+    .label pdb_number = 2
+    .label __17 = $48
+    .label __18 = $34
+    lda.z pdb_number
+    sta.z __1
+    lda #0
+    sta.z __1+1
+    lda.z __2
+    sta.z __2+1
+    lda #0
+    sta.z __2
+    clc
+    lda.z p
+    adc #<stored_pdbs
+    sta.z p
+    lda.z p+1
+    adc #>stored_pdbs
+    sta.z p+1
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    lda (p),y
+    sta.z dma_copy.src
+    iny
+    lda (p),y
+    sta.z dma_copy.src+1
+    iny
+    lda (p),y
+    sta.z dma_copy.src+2
+    iny
+    lda (p),y
+    sta.z dma_copy.src+3
+    lda #0
+    sta.z dma_copy.dest
+    sta.z dma_copy.dest+1
+    sta.z dma_copy.dest+2
+    sta.z dma_copy.dest+3
+    lda #<$400
+    sta.z dma_copy.length
+    lda #>$400
+    sta.z dma_copy.length+1
+    jsr dma_copy
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
+    lda (p),y
+    sta.z __7
+    iny
+    lda (p),y
+    sta.z __7+1
+    iny
+    lda (p),y
+    sta.z __7+2
+    iny
+    lda (p),y
+    sta.z __7+3
+    lda.z dma_copy.src
+    clc
+    adc #<$800
+    sta.z dma_copy.src
+    lda.z dma_copy.src+1
+    adc #>$800
+    sta.z dma_copy.src+1
+    lda.z dma_copy.src+2
+    adc #0
+    sta.z dma_copy.src+2
+    lda.z dma_copy.src+3
+    adc #0
+    sta.z dma_copy.src+3
+    lda #<$800
+    sta.z dma_copy.dest
+    lda #>$800
+    sta.z dma_copy.dest+1
+    lda #<$800>>$10
+    sta.z dma_copy.dest+2
+    lda #>$800>>$10
+    sta.z dma_copy.dest+3
+    lda #<$1800
+    sta.z dma_copy.length
+    lda #>$1800
+    sta.z dma_copy.length+1
+    jsr dma_copy
+    // Load stored CPU state into Hypervisor saved register area at $FFD3640
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE
+    lda (p),y
+    sta.z ss
+    iny
+    lda (p),y
+    sta.z ss+1
+    lda #<0
+    sta.z i
+    sta.z i+1
+  //XXX - Use a for() loop to copy 63 bytes from ss[0]--ss[62] to ((unsigned char *)$D640)[0]
+  //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
+  //      complex reasons.)
+  __b1:
+    lda.z i+1
+    bmi __b2
+    cmp #>$3f
+    bcc __b2
+    bne !+
+    lda.z i
+    cmp #<$3f
+    bcc __b2
+  !:
+    // Set state of process to running
+    // XXX - Set p->process_state to STATE_RUNNING
+    lda #STATE_RUNNING
+    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_PROCESS_STATE
+    sta (p),y
+    // Mark this PDB as the running process
+    //XXX - Set running_pdb to the PDB number we are resuming
+    lda.z pdb_number
+    sta.z running_pdb
+    jsr exit_hypervisor
+    rts
+  __b2:
+    lda.z ss
+    clc
+    adc.z i
+    sta.z __17
+    lda.z ss+1
+    adc.z i+1
+    sta.z __17+1
+    lda #<$d640
+    clc
+    adc.z i
+    sta.z __18
+    lda #>$d640
+    adc.z i+1
+    sta.z __18+1
+    ldy #0
+    lda (__17),y
+    sta (__18),y
+    inc.z i
+    bne !+
+    inc.z i+1
+  !:
+    jmp __b1
+}
+exit_hypervisor: {
+    // Exit hypervisor
+    lda #1
+    sta $d67f
+    rts
+}
+// dma_copy(dword zeropage(9) src, dword zeropage(5) dest, word zeropage(3) length)
+dma_copy: {
+    .label __0 = $36
+    .label __2 = $3a
+    .label __4 = $3e
+    .label __5 = $40
+    .label __7 = $44
+    .label __9 = $48
+    .label src = 9
+    .label dest = 5
+    .label list_request_format0a = $1b
+    .label list_source_mb_option80 = $1c
+    .label list_source_mb = $1d
+    .label list_dest_mb_option81 = $1e
+    .label list_dest_mb = $1f
+    .label list_end_of_options00 = $20
+    .label list_cmd = $21
+    .label list_size = $22
+    .label list_source_addr = $24
+    .label list_source_bank = $26
+    .label list_dest_addr = $27
+    .label list_dest_bank = $29
+    .label list_modulo00 = $2a
+    .label length = 3
+    lda #0
+    sta.z list_request_format0a
+    sta.z list_source_mb_option80
+    sta.z list_source_mb
+    sta.z list_dest_mb_option81
+    sta.z list_dest_mb
+    sta.z list_end_of_options00
+    sta.z list_cmd
+    sta.z list_size
+    sta.z list_size+1
+    sta.z list_source_addr
+    sta.z list_source_addr+1
+    sta.z list_source_bank
+    sta.z list_dest_addr
+    sta.z list_dest_addr+1
+    sta.z list_dest_bank
+    sta.z list_modulo00
+    lda #$a
+    sta.z list_request_format0a
+    lda #$80
+    sta.z list_source_mb_option80
+    lda #$81
+    sta.z list_dest_mb_option81
+    lda #0
+    sta.z list_end_of_options00
+    sta.z list_cmd
+    sta.z list_modulo00
+    lda.z length
+    sta.z list_size
+    lda.z length+1
+    sta.z list_size+1
+    ldx #$14
+    lda.z dest
+    sta.z __0
+    lda.z dest+1
+    sta.z __0+1
+    lda.z dest+2
+    sta.z __0+2
+    lda.z dest+3
+    sta.z __0+3
+    cpx #0
+    beq !e+
+  !:
+    lsr.z __0+3
+    ror.z __0+2
+    ror.z __0+1
+    ror.z __0
+    dex
+    bne !-
+  !e:
+    lda.z __0
+    sta.z list_dest_mb
+    lda #0
+    sta.z __2+2
+    sta.z __2+3
+    lda.z dest+3
+    sta.z __2+1
+    lda.z dest+2
+    sta.z __2
+    lda #$7f
+    and.z __2
+    sta.z list_dest_bank
+    lda.z dest
+    sta.z __4
+    lda.z dest+1
+    sta.z __4+1
+    lda.z __4
+    sta.z list_dest_addr
+    lda.z __4+1
+    sta.z list_dest_addr+1
+    ldx #$14
+    lda.z src
+    sta.z __5
+    lda.z src+1
+    sta.z __5+1
+    lda.z src+2
+    sta.z __5+2
+    lda.z src+3
+    sta.z __5+3
+    cpx #0
+    beq !e+
+  !:
+    lsr.z __5+3
+    ror.z __5+2
+    ror.z __5+1
+    ror.z __5
+    dex
+    bne !-
+  !e:
+    lda.z __5
+    // Work around missing fragments in KickC
+    sta.z list_source_mb
+    lda #0
+    sta.z __7+2
+    sta.z __7+3
+    lda.z src+3
+    sta.z __7+1
+    lda.z src+2
+    sta.z __7
+    lda #$7f
+    and.z __7
+    sta.z list_source_bank
+    lda.z src
+    sta.z __9
+    lda.z src+1
+    sta.z __9+1
+    lda.z __9
+    sta.z list_source_addr
+    lda.z __9+1
+    sta.z list_source_addr+1
+    // DMA list lives in hypervisor memory, so use correct list address
+    // when triggering
+    // (Variables in KickC usually end up in ZP, so we have to provide the
+    // base page correction
+    lda #0
+    cmp #>list_request_format0a
+    beq __b1
+    lda #>list_request_format0a
+    sta $d701
+  __b2:
+    lda #$7f
+    sta $d702
+    lda #$ff
+    sta $d704
+    lda #<list_request_format0a
+    sta $d705
+    rts
+  __b1:
+    lda #$bf+(>list_request_format0a)
+    sta $d701
+    jmp __b2
+}
 // load_program(byte register(A) pdb_number)
 load_program: {
-    .label __1 = $33
-    .label __2 = $33
-    .label __30 = $39
-    .label __31 = $39
-    .label __34 = $53
-    .label __35 = $53
-    .label pdb = $33
-    .label n = $51
-    .label i = $e
-    .label new_address = $57
-    .label address = $53
-    .label length = $30
-    .label dest = $35
-    .label match = $c
+    .label __1 = $4a
+    .label __2 = $4a
+    .label __30 = $50
+    .label __31 = $50
+    .label __34 = $56
+    .label __35 = $56
+    .label pdb = $4a
+    .label n = $54
+    .label i = $f
+    .label new_address = $5a
+    .label address = $56
+    .label length = $2f
+    .label dest = $4c
+    .label match = $d
     sta.z __1
     lda #0
     sta.z __1+1
@@ -466,10 +775,10 @@ load_program: {
     inc.z i
     jmp __b2
 }
-// lpeek(dword zeropage($35) address)
+// lpeek(dword zeropage($4c) address)
 lpeek: {
-    .label t = $2c
-    .label address = $35
+    .label t = $2b
+    .label address = $4c
     // Work around all sorts of fun problems in KickC
     //  dma_copy(address,$BF00+((unsigned short)<&lpeek_value),1);  
     lda #<lpeek_value
@@ -536,183 +845,27 @@ lpeek: {
     sta.z t+3
     jmp __b2
 }
-// dma_copy(dword zeropage(8) src, dword zeropage(4) dest, word zeropage(2) length)
-dma_copy: {
-    .label __0 = $3d
-    .label __2 = $41
-    .label __4 = $45
-    .label __5 = $47
-    .label __7 = $4b
-    .label __9 = $4f
-    .label src = 8
-    .label dest = 4
-    .label list_request_format0a = $1c
-    .label list_source_mb_option80 = $1d
-    .label list_source_mb = $1e
-    .label list_dest_mb_option81 = $1f
-    .label list_dest_mb = $20
-    .label list_end_of_options00 = $21
-    .label list_cmd = $22
-    .label list_size = $23
-    .label list_source_addr = $25
-    .label list_source_bank = $27
-    .label list_dest_addr = $28
-    .label list_dest_bank = $2a
-    .label list_modulo00 = $2b
-    .label length = 2
-    lda #0
-    sta.z list_request_format0a
-    sta.z list_source_mb_option80
-    sta.z list_source_mb
-    sta.z list_dest_mb_option81
-    sta.z list_dest_mb
-    sta.z list_end_of_options00
-    sta.z list_cmd
-    sta.z list_size
-    sta.z list_size+1
-    sta.z list_source_addr
-    sta.z list_source_addr+1
-    sta.z list_source_bank
-    sta.z list_dest_addr
-    sta.z list_dest_addr+1
-    sta.z list_dest_bank
-    sta.z list_modulo00
-    lda #$a
-    sta.z list_request_format0a
-    lda #$80
-    sta.z list_source_mb_option80
-    lda #$81
-    sta.z list_dest_mb_option81
-    lda #0
-    sta.z list_end_of_options00
-    sta.z list_cmd
-    sta.z list_modulo00
-    lda.z length
-    sta.z list_size
-    lda.z length+1
-    sta.z list_size+1
-    ldx #$14
-    lda.z dest
-    sta.z __0
-    lda.z dest+1
-    sta.z __0+1
-    lda.z dest+2
-    sta.z __0+2
-    lda.z dest+3
-    sta.z __0+3
-    cpx #0
-    beq !e+
-  !:
-    lsr.z __0+3
-    ror.z __0+2
-    ror.z __0+1
-    ror.z __0
-    dex
-    bne !-
-  !e:
-    lda.z __0
-    sta.z list_dest_mb
-    lda #0
-    sta.z __2+2
-    sta.z __2+3
-    lda.z dest+3
-    sta.z __2+1
-    lda.z dest+2
-    sta.z __2
-    lda #$7f
-    and.z __2
-    sta.z list_dest_bank
-    lda.z dest
-    sta.z __4
-    lda.z dest+1
-    sta.z __4+1
-    lda.z __4
-    sta.z list_dest_addr
-    lda.z __4+1
-    sta.z list_dest_addr+1
-    ldx #$14
-    lda.z src
-    sta.z __5
-    lda.z src+1
-    sta.z __5+1
-    lda.z src+2
-    sta.z __5+2
-    lda.z src+3
-    sta.z __5+3
-    cpx #0
-    beq !e+
-  !:
-    lsr.z __5+3
-    ror.z __5+2
-    ror.z __5+1
-    ror.z __5
-    dex
-    bne !-
-  !e:
-    lda.z __5
-    // Work around missing fragments in KickC
-    sta.z list_source_mb
-    lda #0
-    sta.z __7+2
-    sta.z __7+3
-    lda.z src+3
-    sta.z __7+1
-    lda.z src+2
-    sta.z __7
-    lda #$7f
-    and.z __7
-    sta.z list_source_bank
-    lda.z src
-    sta.z __9
-    lda.z src+1
-    sta.z __9+1
-    lda.z __9
-    sta.z list_source_addr
-    lda.z __9+1
-    sta.z list_source_addr+1
-    // DMA list lives in hypervisor memory, so use correct list address
-    // when triggering
-    // (Variables in KickC usually end up in ZP, so we have to provide the
-    // base page correction
-    lda #0
-    cmp #>list_request_format0a
-    beq __b1
-    lda #>list_request_format0a
-    sta $d701
-  __b2:
-    lda #$7f
-    sta $d702
-    lda #$ff
-    sta $d704
-    lda #<list_request_format0a
-    sta $d705
-    rts
-  __b1:
-    lda #$bf+(>list_request_format0a)
-    sta $d701
-    jmp __b2
-}
 // Setup a new process descriptor block
-// initialise_pdb(byte zeropage($c) pdb_number)
+// initialise_pdb(byte zeropage($d) pdb_number)
 initialise_pdb: {
-    .label __1 = $51
-    .label __2 = $51
-    .label __9 = $53
-    .label __10 = $53
-    .label __11 = $53
-    .label __12 = $57
-    .label __13 = $57
-    .label __14 = $57
-    .label __15 = $5b
-    .label __16 = $5b
-    .label __17 = $5b
-    .label p = $51
-    .label pn = $61
-    .label i1 = $33
-    .label ss = $51
-    .label pdb_number = $c
-    .label __32 = $5d
-    .label __33 = $5f
+    .label __1 = $54
+    .label __2 = $54
+    .label __9 = $56
+    .label __10 = $56
+    .label __11 = $56
+    .label __12 = $5a
+    .label __13 = $5a
+    .label __14 = $5a
+    .label __15 = $5e
+    .label __16 = $5e
+    .label __17 = $5e
+    .label p = $54
+    .label pn = $64
+    .label i1 = $4a
+    .label ss = $54
+    .label pdb_number = $d
+    .label __32 = $60
+    .label __33 = $62
     lda.z pdb_number
     sta.z __1
     lda #0
@@ -937,10 +1090,10 @@ initialise_pdb: {
     jmp __b1
 }
 next_free_pid: {
-    .label __2 = $61
-    .label pid = $e
-    .label p = $61
-    .label i = $33
+    .label __2 = $64
+    .label pid = $f
+    .label p = $64
+    .label i = $4a
     inc.z pid_counter
     // Start with the next process ID
     lda.z pid_counter
@@ -1003,12 +1156,12 @@ print_newline: {
     rts
 }
 // Copies the character c (an unsigned char) to the first num characters of the object pointed to by the argument str.
-// memset(void* zeropage($51) str, byte register(X) c, word zeropage($33) num)
+// memset(void* zeropage($54) str, byte register(X) c, word zeropage($4a) num)
 memset: {
-    .label end = $33
-    .label dst = $51
-    .label num = $33
-    .label str = $51
+    .label end = $4a
+    .label dst = $54
+    .label num = $4a
+    .label str = $54
     lda.z num
     bne !+
     lda.z num+1
@@ -1042,12 +1195,6 @@ memset: {
 }
 syscall3F: {
     jsr exit_hypervisor
-    rts
-}
-exit_hypervisor: {
-    // Exit hypervisor
-    lda #1
-    sta $d67f
     rts
 }
 syscall3E: {
@@ -1271,9 +1418,9 @@ syscall07: {
     rts
 }
 syscall06: {
-    .label __1 = $63
-    .label __2 = $63
-    .label pdb = $63
+    .label __1 = $66
+    .label __2 = $66
+    .label pdb = $66
     lda.z running_pdb
     sta.z __1
     lda #0
@@ -1320,11 +1467,11 @@ syscall06: {
     .byte 0
 }
 .segment Code
-// print_hex(word zeropage($11) value)
+// print_hex(word zeropage($12) value)
 print_hex: {
-    .label __3 = $65
-    .label __6 = $67
-    .label value = $11
+    .label __3 = $68
+    .label __6 = $6a
+    .label value = $12
     ldx #0
   __b1:
     cpx #8
@@ -1398,7 +1545,7 @@ print_hex: {
 }
 .segment Code
 print_to_screen: {
-    .label c = $11
+    .label c = $12
   __b1:
     ldy #0
     lda (c),y
@@ -1418,10 +1565,10 @@ print_to_screen: {
     jmp __b1
 }
 syscall05: {
-    .label __9 = $73
-    .label __10 = $73
-    .label next_pdb = $14
-    .label pdb = $73
+    .label __9 = $6c
+    .label __10 = $6c
+    .label next_pdb = $15
+    .label pdb = $6c
     lda.z running_pdb
     sta.z next_pdb
     cmp #8
@@ -1434,6 +1581,8 @@ syscall05: {
     cpx #8
     bcc __b4
   __b7:
+    lda.z next_pdb
+    sta.z resume_pdb.pdb_number
     jsr resume_pdb
     jsr exit_hypervisor
     rts
@@ -1466,160 +1615,16 @@ syscall05: {
     stx.z next_pdb
     jmp __b7
 }
-// resume_pdb(byte zeropage($14) pdb_number)
-resume_pdb: {
-    .label __1 = $73
-    .label __2 = $73
-    .label __7 = $6b
-    .label p = $73
-    .label ss = $69
-    .label i = $15
-    .label pdb_number = $14
-    .label __17 = $6f
-    .label __18 = $71
-    lda.z pdb_number
-    sta.z __1
-    lda #0
-    sta.z __1+1
-    lda.z __2
-    sta.z __2+1
-    lda #0
-    sta.z __2
-    clc
-    lda.z p
-    adc #<stored_pdbs
-    sta.z p
-    lda.z p+1
-    adc #>stored_pdbs
-    sta.z p+1
-    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
-    lda (p),y
-    sta.z dma_copy.src
-    iny
-    lda (p),y
-    sta.z dma_copy.src+1
-    iny
-    lda (p),y
-    sta.z dma_copy.src+2
-    iny
-    lda (p),y
-    sta.z dma_copy.src+3
-    lda #0
-    sta.z dma_copy.dest
-    sta.z dma_copy.dest+1
-    sta.z dma_copy.dest+2
-    sta.z dma_copy.dest+3
-    lda #<$400
-    sta.z dma_copy.length
-    lda #>$400
-    sta.z dma_copy.length+1
-    jsr dma_copy
-    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
-    lda (p),y
-    sta.z __7
-    iny
-    lda (p),y
-    sta.z __7+1
-    iny
-    lda (p),y
-    sta.z __7+2
-    iny
-    lda (p),y
-    sta.z __7+3
-    lda.z __7
-    clc
-    adc #<$800
-    sta.z dma_copy.src
-    lda.z __7+1
-    adc #>$800
-    sta.z dma_copy.src+1
-    lda.z __7+2
-    adc #0
-    sta.z dma_copy.src+2
-    lda.z __7+3
-    adc #0
-    sta.z dma_copy.src+3
-    lda #<$800
-    sta.z dma_copy.dest
-    lda #>$800
-    sta.z dma_copy.dest+1
-    lda #<$800>>$10
-    sta.z dma_copy.dest+2
-    lda #>$800>>$10
-    sta.z dma_copy.dest+3
-    lda #<$1800
-    sta.z dma_copy.length
-    lda #>$1800
-    sta.z dma_copy.length+1
-    jsr dma_copy
-    // Load stored CPU state into Hypervisor saved register area at $FFD3640
-    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORED_STATE
-    lda (p),y
-    sta.z ss
-    iny
-    lda (p),y
-    sta.z ss+1
-    lda #<0
-    sta.z i
-    sta.z i+1
-  //XXX - Use a for() loop to copy 63 bytes from ss[0]--ss[62] to ((unsigned char *)$D640)[0]
-  //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
-  //      complex reasons.)
-  __b1:
-    lda.z i+1
-    bmi __b2
-    cmp #>$3f
-    bcc __b2
-    bne !+
-    lda.z i
-    cmp #<$3f
-    bcc __b2
-  !:
-    // Set state of process to running
-    // XXX - Set p->process_state to STATE_RUNNING
-    lda #STATE_RUNNING
-    ldy #OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_PROCESS_STATE
-    sta (p),y
-    // Mark this PDB as the running process
-    //XXX - Set running_pdb to the PDB number we are resuming
-    lda.z pdb_number
-    sta.z running_pdb
-    jsr exit_hypervisor
-    rts
-  __b2:
-    lda.z ss
-    clc
-    adc.z i
-    sta.z __17
-    lda.z ss+1
-    adc.z i+1
-    sta.z __17+1
-    lda #<$d640
-    clc
-    adc.z i
-    sta.z __18
-    lda #>$d640
-    adc.z i+1
-    sta.z __18+1
-    ldy #0
-    lda (__17),y
-    sta (__18),y
-    inc.z i
-    bne !+
-    inc.z i+1
-  !:
-    jmp __b1
-}
 // pause_pdb(byte register(A) pdb_number)
 pause_pdb: {
-    .label __1 = $69
-    .label __2 = $69
-    .label __7 = $6b
-    .label p = $69
-    .label ss = $6f
-    .label i = $15
-    .label __16 = $71
-    .label __17 = $73
+    .label __1 = $6e
+    .label __2 = $6e
+    .label __7 = $70
+    .label p = $6e
+    .label ss = $74
+    .label i = $6c
+    .label __16 = $76
+    .label __17 = $78
     sta.z __1
     lda #0
     sta.z __1+1
@@ -1763,11 +1768,11 @@ syscall03: {
 }
 // describe_pdb(byte register(X) pdb_number)
 describe_pdb: {
-    .label __1 = $75
-    .label __2 = $75
-    .label p = $75
-    .label n = $77
-    .label ss = $75
+    .label __1 = $7a
+    .label __2 = $7a
+    .label p = $7a
+    .label n = $7c
+    .label ss = $7a
     txa
     sta.z __1
     lda #0
@@ -2036,10 +2041,10 @@ print_char: {
     inc.z current_screen_x
     rts
 }
-// print_dhex(dword zeropage($18) value)
+// print_dhex(dword zeropage($17) value)
 print_dhex: {
-    .label __0 = $79
-    .label value = $18
+    .label __0 = $7e
+    .label value = $17
     lda #0
     sta.z __0+2
     sta.z __0+3
