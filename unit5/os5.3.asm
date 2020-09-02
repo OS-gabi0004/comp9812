@@ -155,9 +155,10 @@ resume_pdb: {
     .const pdb_number = 0
     .label p = stored_pdbs
     .label __7 = $43
-    .label ss = $4a
+    .label ss = $4c
     .label i = $b
     .label __17 = $48
+    .label __18 = $4a
     lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS
     sta.z dma_copy.src
     lda p+OFFSET_STRUCT_PROCESS_DESCRIPTOR_BLOCK_STORAGE_START_ADDRESS+1
@@ -249,9 +250,16 @@ resume_pdb: {
     lda.z ss+1
     adc.z i+1
     sta.z __17+1
+    lda #<$d640
+    clc
+    adc.z i
+    sta.z __18
+    lda #>$d640
+    adc.z i+1
+    sta.z __18+1
     ldy #0
     lda (__17),y
-    sta $d640+$3e
+    sta (__18),y
     inc.z i
     bne !+
     inc.z i+1
@@ -271,7 +279,7 @@ dma_copy: {
     .label __4 = $4a
     .label __5 = $37
     .label __7 = $3b
-    .label __9 = $48
+    .label __9 = $4c
     .label src = $43
     .label list_request_format0a = $16
     .label list_source_mb_option80 = $17
@@ -426,7 +434,7 @@ load_program: {
     .label __31 = $43
     .label __34 = 6
     .label __35 = 6
-    .label n = $4a
+    .label n = $4c
     .label c2 = $47
     .label new_address = $3f
     .label address = 6
@@ -757,9 +765,9 @@ lpeek: {
 // Setup a new process descriptor block
 initialise_pdb: {
     .label p = stored_pdbs
-    .label pn = $48
+    .label pn = $4e
     .label i1 = $b
-    .label ss = $4e
+    .label ss = $48
     .label __32 = $4a
     .label __33 = $4c
     jsr next_free_pid
@@ -928,11 +936,11 @@ print_newline: {
     rts
 }
 // Copies the character c (an unsigned char) to the first num characters of the object pointed to by the argument str.
-// memset(void* zeropage($48) str, byte register(X) c, word zeropage($4a) num)
+// memset(void* zeropage($48) str, byte register(X) c, word zeropage($4c) num)
 memset: {
-    .label end = $4a
+    .label end = $4c
     .label dst = $48
-    .label num = $4a
+    .label num = $4c
     .label str = $48
     lda.z num
     bne !+
