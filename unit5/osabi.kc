@@ -43,7 +43,11 @@ unsigned char fork()
 void exec(char *program_name)
 {
         // XXX - Copy the program_name argument to the transfer area at $0300	
-
+  byte *str_mem = $0300;
+  while(*program_name) {
+    *str_mem++ = *program_name++;
+  }
+  *str_mem = 0;
 	enable_syscalls();
 	*(unsigned char *)$D648 = $00;
 	asm { nop }

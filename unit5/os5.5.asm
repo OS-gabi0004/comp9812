@@ -1479,6 +1479,9 @@ syscall08: {
     iny
     lda #>$80d
     sta (ss),y
+    lda.z running_pdb
+    sta.z resume_pdb.pdb_number
+    jsr resume_pdb
     rts
   __b5:
     lda #0

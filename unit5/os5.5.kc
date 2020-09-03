@@ -540,6 +540,8 @@ void syscall08() {
   ss[7] = $24;
   *(unsigned short *) &ss[5] = $01FF;
   *(unsigned short *) &ss[8] = $080D;
+
+  resume_pdb(running_pdb);
 //exit_hypervisor();
 }
 
