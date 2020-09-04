@@ -195,7 +195,7 @@ void resume_pdb(unsigned char pdb_number)
   //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
   //      complex reasons.)
   for (int i = 0; i < 63; i++) {
-    ((unsigned char *)$D640)[62] = ss[i];
+    ((unsigned char *)$D640)[i] = ss[i];
   }
   // Set state of process to running
   // XXX - Set p->process_state to STATE_RUNNING
@@ -208,6 +208,42 @@ void resume_pdb(unsigned char pdb_number)
   // Exit hypervisor and cause CPU register values (including PC) to be restored from
   // those loaded from p->stored_state
   exit_hypervisor();
+}
+
+void pause_pdb(unsigned char pdb_number)
+{
+  struct process_descriptor_block *p
+    =(struct process_descriptor_block *)(((unsigned short)stored_pdbs)+(((unsigned short)pdb_number)<<8));
+
+  // Copy stored memory into place
+  // Copy from $0000-$03FF and $0800-$1FFF, so that we don't overwrite
+  // the screen
+  // XXX - Copy $0400 bytes from p->storage_start_address to location $0000
+  // XXX - Copy $1800 bytes from p->storage_start_address+$0800 to location $0800
+  //      (Use (unsigned dword)(p->storage_start_address)+offset to pass these
+  //       addresses in calls to dma_copy() to cast them to the correct type.)
+  dma_copy($0000, (unsigned dword)(p->storage_start_address),  $0400);
+  dma_copy($0800, (unsigned dword)(p->storage_start_address)+$0800, $1800);
+  // Load stored CPU state into Hypervisor saved register area at $FFD3640
+  unsigned char *ss=p->stored_state;
+  //XXX - Use a for() loop to copy 63 bytes from ss[0]--ss[62] to ((unsigned char *)$D640)[0]
+  //      -- ((unsigned char *)$D640)[62] (dma_copy doesn't work for this for some slightly
+  //      complex reasons.)
+  for (int i = 0; i < 63; i++) {
+     ss[i] = ((unsigned char *)$D640)[i];
+  }
+  // Set state of process to running
+  // XXX - Set p->process_state to STATE_RUNNING
+  p->process_state = STATE_READY;
+
+  // Mark this PDB as the running process
+  //XXX - Set running_pdb to the PDB number we are resuming
+  running_pdb = 0;
+
+  // Exit hypervisor and cause CPU register values (including PC) to be restored from
+  // those loaded from p->stored_state
+  //exit_hypervisor();
+  return;
 }
 
 struct dma_list {
@@ -431,10 +467,35 @@ void syscall04() {
 }
 
 void syscall05() {
+  byte next_pdb = running_pdb;
+  if (next_pdb < 8) {
+    pause_pdb(running_pdb);
+  }
+  for(byte i = 0; i < 8; i++) {
+    if(i == next_pdb) {
+      continue;
+    }
+    struct process_descriptor_block *pdb = 
+      (struct process_descriptor_block *)((unsigned short)stored_pdbs+(((unsigned short)i)<<8));
+    if (pdb->process_state == STATE_READY) {
+      next_pdb = i; break;
+    }
+  }
+  resume_pdb(next_pdb);
   exit_hypervisor();
+
 }
 
 void syscall06() {
+  unsigned char pid;
+  struct process_descriptor_block *pdb = (struct process_descriptor_block*)((unsigned short)stored_pdbs+(((unsigned short)running_pdb)<<8));
+
+  print_to_screen("you are pid ");
+  print_hex(pdb->process_id);
+  print_to_screen(" in pdb ");
+  print_hex(running_pdb);
+  print_newline();
+
   exit_hypervisor();
 }
 
@@ -678,9 +739,12 @@ void RESET() {
   print_newline();
   print_newline();
 
-  initialise_pdb(0,"program1.prg");
-
+  initialise_pdb(0,"program2.prg");
   load_program(0);
+
+  initialise_pdb(1,"program2.prg");
+  load_program(1);
+
   resume_pdb(0);
   //describe_pdb(0);
 

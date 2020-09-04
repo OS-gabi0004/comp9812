@@ -100,6 +100,8 @@ pagfault: {
 //XXX - Copy your RESET() routine from os5.2.kc
 //XXX - Don't forget to call resume_pdb(0) immediately after load_program(0)
 RESET: {
+    .label sc = $5e
+    .label msg = $4a
     lda #$14
     sta VIC_MEMORY
     ldx #' '
@@ -122,6 +124,19 @@ RESET: {
     lda #>$28*$19
     sta.z memset.num+1
     jsr memset
+    lda #<SCREEN+$28
+    sta.z sc
+    lda #>SCREEN+$28
+    sta.z sc+1
+    lda #<MESSAGE
+    sta.z msg
+    lda #>MESSAGE
+    sta.z msg+1
+  __b1:
+    ldy #0
+    lda (msg),y
+    cmp #0
+    bne __b2
     lda #<SCREEN
     sta.z current_screen_line
     lda #>SCREEN
@@ -142,19 +157,32 @@ RESET: {
     lda #0
     sta.z resume_pdb.pdb_number
     jsr resume_pdb
-  __b1:
+  __b4:
     lda #$36
     cmp RASTER
-    beq __b2
+    beq __b5
     lda #$42
     cmp RASTER
-    beq __b2
+    beq __b5
     lda #BLACK
     sta BGCOL
-    jmp __b1
-  __b2:
+    jmp __b4
+  __b5:
     lda #WHITE
     sta BGCOL
+    jmp __b4
+  __b2:
+    ldy #0
+    lda (msg),y
+    sta (sc),y
+    inc.z sc
+    bne !+
+    inc.z sc+1
+  !:
+    inc.z msg
+    bne !+
+    inc.z msg+1
+  !:
     jmp __b1
   .segment Data
     name: .text "program2.prg"
@@ -476,7 +504,7 @@ load_program: {
     .label __34 = $56
     .label __35 = $56
     .label pdb = $4a
-    .label n = $54
+    .label n = $5e
     .label i = $f
     .label new_address = $5a
     .label address = $56
@@ -1093,7 +1121,7 @@ next_free_pid: {
     .label __2 = $64
     .label pid = $f
     .label p = $64
-    .label i = $4a
+    .label i = $5e
     inc.z pid_counter
     // Start with the next process ID
     lda.z pid_counter
@@ -1156,12 +1184,12 @@ print_newline: {
     rts
 }
 // Copies the character c (an unsigned char) to the first num characters of the object pointed to by the argument str.
-// memset(void* zeropage($54) str, byte register(X) c, word zeropage($4a) num)
+// memset(void* zeropage($5e) str, byte register(X) c, word zeropage($4a) num)
 memset: {
     .label end = $4a
-    .label dst = $54
+    .label dst = $5e
     .label num = $4a
-    .label str = $54
+    .label str = $5e
     lda.z num
     bne !+
     lda.z num+1
@@ -2075,6 +2103,9 @@ syscall00: {
     jsr exit_hypervisor
     rts
 }
+.segment Data
+  MESSAGE: .text "checkpoint 5.3 gabi0004"
+  .byte 0
 .segment Syscall
   SYSCALLS: .byte JMP
   .word syscall00
