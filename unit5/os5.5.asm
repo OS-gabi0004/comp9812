@@ -1611,7 +1611,7 @@ syscall07: {
     inc.z i
     jmp __b1
   .segment Data
-    name: .text "temp_child_name"
+    name: .text "temp_child"
     .byte 0
 }
 .segment Code
@@ -2274,7 +2274,7 @@ syscall00: {
     rts
 }
 .segment Data
-  MESSAGE: .text "checkpoint 5.3 gabi0004"
+  MESSAGE: .text "checkpoint 5.5 gabi0004"
   .byte 0
 .segment Syscall
   SYSCALLS: .byte JMP
