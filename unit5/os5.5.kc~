@@ -500,11 +500,49 @@ void syscall06() {
 }
 
 void syscall07() {
+  byte parent_pdb = running_pdb;
+  byte child_pdb = $00;
+  pause_pdb(running_pdb);
+
+  for(byte i = 0; i < 8; i++) {
+    struct process_descriptor_block *pdb = 
+      (struct process_descriptor_block *)((unsigned short)stored_pdbs+(((unsigned short)i)<<8));
+    if (pdb->process_id == 0) {
+      child_pdb = i; break;
+    }
+  }
+  initialise_pdb(child_pdb,"temp_child_name");
+
+    *(byte *)$0300 = $00;
+    pause_pdb(child_pdb);
+    struct process_descriptor_block *p = 
+      (struct process_descriptor_block *)((unsigned short)stored_pdbs+(((unsigned short)child_pdb)<<8));
+    *(byte *)$0300 = p->process_id;
+    running_pdb = parent_pdb;
   exit_hypervisor();
 }
 
 void syscall08() {
-  exit_hypervisor();
+  struct process_descriptor_block *pdb = (struct process_descriptor_block*)((unsigned short)stored_pdbs+(((unsigned short)running_pdb)<<8));
+  char *p_name = pdb->process_name;
+  char *o_name = $0300;
+  while(*o_name) {
+    *p_name++ = *o_name++;
+  }
+  *p_name = 0;
+  load_program(running_pdb);
+
+  // set-up new program
+  byte *ss = pdb->stored_state;
+  for (byte i=0; i<63; i++) {
+    ss[i] = $00;
+  }
+  ss[7] = $24;
+  *(unsigned short *) &ss[5] = $01FF;
+  *(unsigned short *) &ss[8] = $080D;
+
+  resume_pdb(running_pdb);
+//exit_hypervisor();
 }
 
 void syscall09() {
@@ -739,12 +777,8 @@ void RESET() {
   print_newline();
   print_newline();
 
-  initialise_pdb(0,"program2.prg");
+  initialise_pdb(0,"program3.prg");
   load_program(0);
-
-  initialise_pdb(1,"program2.prg");
-  load_program(1);
-
   resume_pdb(0);
   //describe_pdb(0);
 
