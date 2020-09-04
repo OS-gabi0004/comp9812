@@ -511,7 +511,7 @@ void syscall07() {
       child_pdb = i; break;
     }
   }
-  initialise_pdb(child_pdb,"temp_child_name");
+  initialise_pdb(child_pdb,"temp_child");
 
     *(byte *)$0300 = $00;
     pause_pdb(child_pdb);
