@@ -90,6 +90,9 @@ void my_opendir(void)
   // how many sectors in a cluster, and add one less than that to the starting
   // sector of the root directory.
   // Complexity guide: My solution was 3 lines long.
+  dir_sector = f_rootdir_sector;
+  dir_sector_offset = 0;
+  dir_sector_max = 512; 
 }
 
 struct my_dirent return_structure;
@@ -106,6 +109,19 @@ struct my_dirent *my_readdir(void)
   // you go past the end of dir_sector_max.
   // Complexity guide: My solution was 11 lines long.
   
+  if (dir_sector_offset >= dir_sector_max) {
+      dir_sector++; 
+      dir_sector_offset = 0;
+  }
+  
+  sdcard_readsector(dir_sector);
+  
+  extract_filename(dir_sector_offset, return_structure.name);
+  return_structure.cluster = extract_uint16(dir_sector_offset+0x14) + extract_uint16(dir_sector_offset+0x1a);
+  return_structure.attribs = sector_buffer[0xb]; 
+  return_structure.length = extract_uint32(dir_sector_offset+0x1c);
+  
+  dir_sector_offset += 32;
   // At this point you have the directory entry located at offset dir_sector_offset in
   // sector_buffer[]. You can now use the convenience functions extract_uint32(), extract_uint16()
   // and extract_filename() that I have provided for you to extract the necessary values
