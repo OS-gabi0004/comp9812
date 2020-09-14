@@ -47,13 +47,15 @@ void wu7_examine_file_system(void)
   // will be 0x0c), and then use extract_uint32() to get the start and size of the partition
   // into p_start and p_size.
   sdcard_readsector(0);
-  for(int i = 0x1be; i < 0x1fe; i+=0x010) {
+  
+  for(int i = 0x1be; i <= 0x1ee; i+=0x010) {
     if (extract_uint32(i+0x4) == 0x0c) { 
       p_start = extract_uint32(i+0x8);
       p_size = extract_uint32(i+0xc);
       break;
     }
   }
+  sdcard_readsector(p_start);
   // Complexity guide: My solution was 6 lines long.
 
   // Then read the first sector of the FAT32 partition, and use extract_uint32(), extract_uint16()
