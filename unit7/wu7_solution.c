@@ -66,6 +66,15 @@ void wu7_examine_file_system(void)
   // by the number of 32-bit values (i.e., 4 bytes long each) that can be packed into a 512 byte sector).
   // Complexity guide: My solution was 11 lines long.
 
+  f_reserved_sectors = extract_uint16(0x0e);
+  f_sectors_per_cluster = sector_buffer[0x0d];
+  f_sectors_per_fat = sector_buffer[0x24];
+  f_rootdir_cluster = extract_uint32(0x2c);
+  
+  f_fat1_sector = p_start+f_reserved_sectors;
+  f_fat2_sector = f_fat1_sector+f_sectors_per_fat;
+  f_rootdir_sector = f_fat2_sector + f_sectors_per_fat;
+
 }
 
 u_int32_t dir_sector=0;
