@@ -158,7 +158,8 @@ int my_open(char *filename)
   // filename that has been passed in.  strcmp() is a handy function
   // for this.
   // Complexity guide: My solution was 5 lines long.
-  struct my_dirent *de=NULL;
+  my_opendir();
+  struct my_dirent *de=my_readdir();
 
   // XXX - Next, abort if you couldn't find the file.  You can detect this
   // by seeing if my_readdir() has gotten to the end of the directory, and
