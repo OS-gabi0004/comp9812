@@ -116,12 +116,7 @@ struct my_dirent *my_readdir(void)
   
   sdcard_readsector(dir_sector);
   
-  extract_filename(dir_sector_offset, return_structure.name);
-  return_structure.cluster = extract_uint16(dir_sector_offset+0x14) + extract_uint16(dir_sector_offset+0x1a);
-  return_structure.attribs = sector_buffer[0xb]; 
-  return_structure.length = extract_uint32(dir_sector_offset+0x1c);
-  
-  dir_sector_offset += 32;
+
   // At this point you have the directory entry located at offset dir_sector_offset in
   // sector_buffer[]. You can now use the convenience functions extract_uint32(), extract_uint16()
   // and extract_filename() that I have provided for you to extract the necessary values
@@ -133,11 +128,18 @@ struct my_dirent *my_readdir(void)
   // Your solution will look like a series of return_structure.member=extract....() lines,
   // plus a call to extract_filename().
   // Complexity guide: My solution was 5 lines long.
+  extract_filename(dir_sector_offset, return_structure.name);
+  return_structure.cluster = extract_uint16(dir_sector_offset+0x14) + extract_uint16(dir_sector_offset+0x1a);
+  return_structure.attribs = sector_buffer[0xb]; 
+  return_structure.length = extract_uint32(dir_sector_offset+0x1c);
+  
 
   // XXX - Finally, advance dir_sector_offset (and dir_sector if the offset goes past the end
   // of the sector), so that it is pointing at the next directory entry, ready for the next call
   // to this function.
   // Complexity guide: My solution was 5 lines long.
+
+  dir_sector_offset += 32;
 
   // And really last of all, we return a pointer to the return_structure, which I have done for
   // you here:
