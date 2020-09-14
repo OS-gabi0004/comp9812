@@ -46,14 +46,6 @@ void wu7_examine_file_system(void)
   // Within that, find the partition entry that has a FAT32 partition in it (partition type
   // will be 0x0c), and then use extract_uint32() to get the start and size of the partition
   // into p_start and p_size.
-  sdcard_readsector(0);
-  for(int i = 0x1be; i < 0x1fe; i+=0x010) {
-    if (extract_uint32(i+0x4) == 0x0c) { 
-      p_start = extract_uint32(i+0x8);
-      p_size = extract_uint32(i+0xc);
-      break;
-    }
-  }
   // Complexity guide: My solution was 6 lines long.
 
   // Then read the first sector of the FAT32 partition, and use extract_uint32(), extract_uint16()
@@ -193,7 +185,7 @@ struct my_dirent *my_findfile(char *name)
   // to get the starting cluster of the sub-directory, and start iterating through that
   // in the same way. This is repeated until you find the file you are looking for.
   // At that point, you should return the directory entry structure that my_readdir()
-  // gave you as the result.  If you can't find the file, you should return NULL instead.
+  // gave you as the result.  If you can't find the file, you should re   hj turn NULL instead.
   // Complexity guide: My solution was 23 lines long.
   
   return NULL;
